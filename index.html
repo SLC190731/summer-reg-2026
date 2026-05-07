@@ -32,21 +32,27 @@
         .admin-table th, .admin-table td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
         .stat-badge { padding: 8px 12px; border-radius: 5px; font-weight: bold; font-size: 0.9em; min-width: 110px; text-align: center; color: white; display: inline-block; margin: 5px; }
         #dailyListModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; }
-        .modal-content { background: #fff; width: 95%; max-width: 1200px; margin: 1% auto; padding: 20px; height: 95vh; overflow-y: auto; border-radius: 15px; }
-        .student-name-tag { display: block; background: #E1F5FE; color: #01579B; margin-bottom: 2px; padding: 4px 6px; border-radius: 3px; border-left: 3px solid #0288D1; font-weight: bold; line-height: 1.2; text-align: left; font-size: 12px; }
-        .tag-subject { color: #E65100; font-size: 11px; display: block; border-top: 1px dashed #B3E5FC; margin-top: 2px; padding-top: 2px; }
+        .modal-content { background: #fff; width: 95%; max-width: 1000px; margin: 1% auto; padding: 30px; height: 95vh; overflow-y: auto; border-radius: 15px; }
+        
+        /* 每日名單新樣式 */
+        .daily-date-header { background: #E1F5FE; padding: 10px 15px; margin-top: 25px; border-radius: 8px; border-left: 8px solid #0288D1; font-weight: bold; color: #01579B; font-size: 1.2em; display: flex; justify-content: space-between; }
+        .daily-student-row { display: grid; grid-template-columns: 2fr 1.5fr 2fr; gap: 10px; padding: 8px 15px; border-bottom: 1px solid #EEE; align-items: center; }
+        .daily-student-row:nth-child(even) { background: #FDFBF7; }
+        .daily-grade-badge { background: #F5F5F5; padding: 2px 8px; border-radius: 4px; font-size: 0.85em; color: #666; }
+        .daily-subject-tag { color: #E65100; font-weight: bold; }
+
         .sync-loader { color: #e67e22; font-weight: bold; animation: blink 1s infinite; margin-bottom: 10px; }
         @keyframes blink { 50% { opacity: 0.3; } }
         @media print {
-            @page { margin: 0.3cm; size: A4; }
-            body { background: white !important; padding: 0 !important; margin: 0 !important; }
+            @page { margin: 0.5cm; size: A4; }
+            body { background: white !important; padding: 0 !important; }
             .no-print, .btn, #adminToggle { display: none !important; }
             .page, #adminPanel { display: none !important; }
-            body.print-mode-parent #page3 { display: block !important; transform: scale(0.72); transform-origin: top center; width: 100%; }
-            body.print-mode-admin #adminPanel { display: block !important; transform: scale(0.9); transform-origin: top center; }
-            body.print-mode-daily #dailyListModal { display: block !important; position: static; background: white; width: 100%; }
-            body.print-mode-daily .modal-content { width: 100%; height: auto; margin: 0; padding: 0; box-shadow: none; transform: scale(0.9); transform-origin: top center; }
-            .daily-cal-grid { grid-template-columns: repeat(5, 1fr) !important; }
+            body.print-mode-parent #page3 { display: block !important; transform: scale(0.75); transform-origin: top center; }
+            body.print-mode-daily #dailyListModal { display: block !important; position: static; background: white; }
+            body.print-mode-daily .modal-content { width: 100%; height: auto; box-shadow: none; padding: 0; margin: 0; }
+            .daily-date-header { background: #EEE !important; border-left: 5px solid #333 !important; -webkit-print-color-adjust: exact; }
+            .daily-student-row { page-break-inside: avoid; }
         }
     </style>
 </head>
@@ -145,11 +151,11 @@
 <div id="dailyListModal">
     <div class="modal-content">
         <div style="display:flex; justify-content: space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:10px;">
-            <h3>📅 每日上課名單統計 (星期一起始)</h3>
-            <div class="no-print"><button class="btn" style="background:#0288D1; width:auto; margin:0;" onclick="triggerDailyPrint()">🖨 列印名單</button>
+            <h3>📅 每日上課名單 (按年級分組排序)</h3>
+            <div class="no-print"><button class="btn" style="background:#0288D1; width:auto; margin:0;" onclick="triggerDailyPrint()">🖨 列印</button>
             <button class="btn" style="background:#795548; width:auto; margin:0;" onclick="document.getElementById('dailyListModal').style.display='none'">關閉</button></div>
         </div>
-        <div id="dailyCalContent"></div>
+        <div id="dailyListContent"></div>
     </div>
 </div>
 
@@ -160,11 +166,10 @@ const PRICING = {
     secondary: { A: {12:2760, 16:3540, 19:4310}, B: {20:10080, 24:11760, 29:13440}, C_WithB: {20:3120, 24:3000, 29:2940}, C_Single: 3980 },
     primary: { A: {12:2520, 16:3240, 18:3780}, B: {20:8880, 24:10320, 29:12150}, C_WithB: {20:3060, 24:2790, 29:2640}, C_Single: 3250 }
 };
-const PART_C_DATES = { primary: "07/08/2026 - 09/08/2026", secondary: "14/08/2026 - 16/08/2026" };
-const DATA_GROUP = { p1:"p1p3p6", p2:"p1p3p6", p3:"p1p3p6", p6:"p1p3p6", p4:"p4p5", p5:"p4p5", secondary:"secondary" };
 const GRADE_ORDER = { "升小一":1, "升小二":2, "升小三":3, "升小四":4, "升小五":5, "升小六":6, "升中一或以上":7 };
+const DATA_GROUP = { p1:"p1p3p6", p2:"p1p3p6", p3:"p1p3p6", p6:"p1p3p6", p4:"p4p5", p5:"p4p5", secondary:"secondary" };
 
-let isDragging = false, selA = new Set(), selB = new Set(), cloudRecords = [];
+let selA = new Set(), selB = new Set(), cloudRecords = [];
 
 function saveRecord() {
     const r = { 
@@ -186,98 +191,84 @@ function refreshFromSheets() {
     fetch(scriptURL)
     .then(res => res.json())
     .then(data => { cloudRecords = data; renderAdminTable(data); document.getElementById('syncStatus').style.display = 'none'; })
-    .catch(err => { console.error("Sync Error:", err); document.getElementById('syncStatus').innerText = "❌ 同步失敗"; });
+    .catch(err => { console.error("Sync Error:", err); });
 }
 
 function renderAdminTable(records) {
     records.sort((a, b) => (GRADE_ORDER[a.gradeText] || 99) - (GRADE_ORDER[b.gradeText] || 99));
-    const tbody = document.querySelector('#recordTable tbody');
-    tbody.innerHTML = '';
-    let totRev = 0, pBoy = 0, pGirl = 0, sBoy = 0, sGirl = 0;
+    const tbody = document.querySelector('#recordTable tbody'); tbody.innerHTML = '';
     records.forEach(r => {
-        totRev += Number(r.total);
-        if(r.hasPartC) {
-            if(r.gradeText.includes('小')) { if(r.gender === "男") pBoy++; else pGirl++; }
-            else { if(r.gender === "男") sBoy++; else sGirl++; }
-        }
         tbody.innerHTML += `<tr><td>${r.name}</td><td>${r.gradeText}</td><td>${r.gender}</td><td>$${r.total}</td><td>${r.countA}</td><td>${r.countB}</td><td>${r.hasPartC?'V':'×'}</td><td>${r.timestamp}</td></tr>`;
     });
-    document.getElementById('statContainer').innerHTML = `<div class="stat-badge" style="background:#4A6D8C;">總人數: ${records.length}</div><div class="stat-badge" style="background:#16a085;">總額: $${totRev}</div><div class="stat-badge" style="background:#2980b9;">Part C 小男: ${pBoy}</div><div class="stat-badge" style="background:#c0392b;">Part C 小女: ${pGirl}</div><div class="stat-badge" style="background:#2c3e50;">Part C 中男: ${sBoy}</div><div class="stat-badge" style="background:#c0392b;">Part C 中女: ${sGirl}</div>`;
 }
-
-function toggleAdmin() { if (prompt("管理密碼：") === "8888") { document.getElementById('adminPanel').style.display = 'block'; refreshFromSheets(); } }
 
 function showDailyModal() {
     document.getElementById('dailyListModal').style.display = 'block';
-    const content = document.getElementById('dailyCalContent'); content.innerHTML = '正在從雲端生成名單...';
-    
+    const content = document.getElementById('dailyListContent'); content.innerHTML = '正在整理名單...';
+    if (cloudRecords.length === 0) refreshFromSheets();
+
     setTimeout(() => {
         content.innerHTML = '';
-        ["06", "07", "08"].forEach(m => {
-            content.innerHTML += `<h4 style="margin-top:20px; border-left:5px solid #4A6D8C; padding-left:10px;">2026年 ${m}月</h4>`;
-            const grid = document.createElement('div'); 
-            grid.className = 'daily-cal-grid';
-            grid.style.display = 'grid';
-            grid.style.gridTemplateColumns = "repeat(5, 1fr)";
-            grid.style.gap = "5px";
-            
-            // 獲取該月份的所有日期並按星期一排序
-            let dates = new Set();
-            Object.values(SCHEDULE_MASTER).forEach(g => g.A.concat(g.B).forEach(i => { if(i.d.startsWith(m)) dates.add(i.d); }));
-            let sortedDates = Array.from(dates).sort((a,b) => a.localeCompare(b));
-            
-            sortedDates.forEach(dStr => {
-                let listHtml = '';
-                cloudRecords.forEach(r => {
-                    let subText = "";
-                    // 自動匹配該生所屬組別當天的科目
-                    let groupKey = r.gradeText.includes("中") ? "secondary" : (["升小一","升小二","升小三","升小六"].some(x=>r.gradeText.includes(x)) ? "p1p3p6" : "p4p5");
-                    let findA = SCHEDULE_MASTER[groupKey].A.find(x => x.d === dStr);
-                    let findB = SCHEDULE_MASTER[groupKey].B.find(x => x.d === dStr);
-                    
-                    let isJoined = false;
-                    if(r.detailsA && r.detailsA.includes(dStr)) { subText = findA ? findA.s : ""; isJoined = true; }
-                    if(r.detailsB && r.detailsB.includes(dStr)) { subText = findB ? findB.s : ""; isJoined = true; }
-
-                    if(isJoined) {
-                        listHtml += `
-                            <div class="student-name-tag">
-                                ${r.name} (${r.gradeText})
-                                <span class="tag-subject">📚 ${subText}</span>
-                            </div>`;
-                    }
-                });
-                grid.innerHTML += `<div style="border:1px solid #ddd; padding:5px; min-height:80px; background:#fff; font-size:11px;"><b>${dStr}</b><br>${listHtml}</div>`;
-            });
-            content.appendChild(grid);
+        let allDates = new Set();
+        Object.values(SCHEDULE_MASTER).forEach(g => g.A.concat(g.B).forEach(i => { if(!i.h) allDates.add(i.d); }));
+        let sortedDates = Array.from(allDates).sort((a, b) => {
+            let d1 = a.split('(')[0], d2 = b.split('(')[0];
+            return d1.localeCompare(d2);
         });
-    }, 500);
+
+        sortedDates.forEach(dStr => {
+            // 過濾出當天有課的人
+            let studentsOnDay = cloudRecords.filter(r => 
+                (r.detailsA && r.detailsA.includes(dStr)) || (r.detailsB && r.detailsB.includes(dStr))
+            );
+
+            if (studentsOnDay.length > 0) {
+                // 按年級排序
+                studentsOnDay.sort((a, b) => (GRADE_ORDER[a.gradeText] || 99) - (GRADE_ORDER[b.gradeText] || 99));
+
+                let dateSection = document.createElement('div');
+                dateSection.innerHTML = `<div class="daily-date-header"><span>${dStr}</span><span>當日人數: ${studentsOnDay.length}</span></div>`;
+                
+                studentsOnDay.forEach(r => {
+                    let groupKey = r.gradeText.includes("中") ? "secondary" : (["一","二","三","六"].some(x=>r.gradeText.includes(x)) ? "p1p3p6" : "p4p5");
+                    let subA = SCHEDULE_MASTER[groupKey].A.find(x => x.d === dStr);
+                    let subB = SCHEDULE_MASTER[groupKey].B.find(x => x.d === dStr);
+                    let finalSub = (r.detailsA.includes(dStr) ? (subA?subA.s:"") : "") + " " + (r.detailsB.includes(dStr) ? (subB?subB.s:"") : "");
+
+                    dateSection.innerHTML += `
+                        <div class="daily-student-row">
+                            <strong>${r.name}</strong>
+                            <span class="daily-grade-badge">${r.gradeText}</span>
+                            <span class="daily-subject-tag">📚 ${finalSub}</span>
+                        </div>`;
+                });
+                content.appendChild(dateSection);
+            }
+        });
+    }, 600);
 }
 
-// UI 基礎邏輯
+// 基礎功能
 function updateEstimates() {
     const g = document.getElementById('stuGrade').value;
     const optMaxA = document.getElementById('optMaxA');
-    if (g === 'secondary') { optMaxA.value = "19"; optMaxA.text = "19 堂"; } else { optMaxA.value = "18"; optMaxA.text = "18 堂"; }
+    optMaxA.value = (g === 'secondary' ? "19" : "18");
+    optMaxA.text = optMaxA.value + " 堂";
     const nA = Number(document.getElementById('planA').value), nB = Number(document.getElementById('planB').value), isC = document.getElementById('planC').checked;
     const p = PRICING[g==='secondary'?'secondary':'primary'];
     let fA = p.A[nA] || 0, fB = p.B[nB] || 0, fC = isC ? (nB>0 ? (p.C_WithB[nB] || p.C_Single) : p.C_Single) : 0;
-    const total = fA + fB + fC;
-    document.getElementById('estTotal').innerText = total;
-    document.getElementById('estInstallment').innerText = Math.round(total / 6);
+    document.getElementById('estTotal').innerText = fA + fB + fC;
+    document.getElementById('estInstallment').innerText = Math.round((fA + fB + fC) / 6);
     document.getElementById('estDetail').innerText = `A: $${fA} | B: $${fB} | C: $${fC}`;
 }
 
 function goToStep2() {
-    if (!document.getElementById('stuName').value) { alert("請輸入姓名"); return; }
+    if (!document.getElementById('stuName').value) return alert("請輸入姓名");
     selA.clear(); selB.clear();
     document.getElementById('page1').classList.remove('active');
     document.getElementById('page2').classList.add('active');
-    const gVal = document.getElementById('stuGrade').value, nA = Number(document.getElementById('planA').value), nB = Number(document.getElementById('planB').value);
-    document.getElementById('studentInfoBar').innerText = `學生：${document.getElementById('stuName').value} | 年級：${document.getElementById('stuGrade').selectedOptions[0].text}`;
-    document.getElementById('secA').style.display = nA > 0 ? 'block' : 'none';
-    document.getElementById('secB').style.display = nB > 0 ? 'block' : 'none';
-    document.getElementById('maxA').innerText = nA; document.getElementById('maxB').innerText = nB;
+    const gVal = document.getElementById('stuGrade').value;
+    document.getElementById('studentInfoBar').innerText = `學生：${document.getElementById('stuName').value}`;
     renderCal('calA', SCHEDULE_MASTER[DATA_GROUP[gVal]].A, selA, 'planA', 'curA');
     renderCal('calB', SCHEDULE_MASTER[DATA_GROUP[gVal]].B, selB, 'planB', 'curB');
 }
@@ -294,7 +285,7 @@ function renderCal(id, data, set, pId, curId, readonly = false) {
         if (!readonly && !item.h) {
             d.onclick = () => {
                 if (set.has(item.d)) { set.delete(item.d); d.classList.remove('selected'); }
-                else { if (set.size >= limit) { alert("已達上限"); return; } set.add(item.d); d.classList.add('selected'); }
+                else { if (set.size >= limit) return alert("已達上限"); set.add(item.d); d.classList.add('selected'); }
                 document.getElementById(curId).innerText = set.size;
             };
         }
@@ -303,19 +294,20 @@ function renderCal(id, data, set, pId, curId, readonly = false) {
 }
 
 function submitAndGoToStep3() {
-    if (selA.size < Number(document.getElementById('planA').value) || selB.size < Number(document.getElementById('planB').value)) { alert("請選滿堂數"); return; }
+    if (selA.size < Number(document.getElementById('planA').value) || selB.size < Number(document.getElementById('planB').value)) return alert("請選滿堂數");
     saveRecord();
     document.getElementById('resName').innerText = document.getElementById('stuName').value;
     document.getElementById('resGrade').innerText = document.getElementById('stuGrade').selectedOptions[0].text;
     document.getElementById('resTotal').innerText = document.getElementById('estTotal').innerText;
     document.getElementById('resInst').innerText = document.getElementById('estInstallment').innerText;
     const gVal = document.getElementById('stuGrade').value;
-    if(selA.size > 0) renderCal('resCalA', SCHEDULE_MASTER[DATA_GROUP[gVal]].A, selA, 'planA', '', true);
-    if(selB.size > 0) renderCal('resCalB', SCHEDULE_MASTER[DATA_GROUP[gVal]].B, selB, 'planB', '', true);
+    renderCal('resCalA', SCHEDULE_MASTER[DATA_GROUP[gVal]].A, selA, 'planA', '', true);
+    renderCal('resCalB', SCHEDULE_MASTER[DATA_GROUP[gVal]].B, selB, 'planB', '', true);
     document.getElementById('page2').classList.remove('active');
     document.getElementById('page3').classList.add('active');
 }
 
+function toggleAdmin() { if (prompt("管理密碼：") === "8888") { document.getElementById('adminPanel').style.display = 'block'; refreshFromSheets(); } }
 function triggerParentPrint() { document.body.className = 'print-mode-parent'; window.print(); }
 function triggerAdminPrint() { document.body.className = 'print-mode-admin'; window.print(); }
 function triggerDailyPrint() { document.body.className = 'print-mode-daily'; window.print(); }
@@ -328,7 +320,7 @@ const SCHEDULE_MASTER = {
     },
     p4p5: {
         A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(遷)",s:"中文"},{d:"07/24(五)",s:"模考"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英文"},{d:"07/31(五)",s:"模考"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"英文作"},{d:"08/06(四)",s:"英文作"},{d:"08/07(五)",s:"不開放",h:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數學"},{d:"08/14(五)",s:"模考"},{d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人文"},{d:"08/21(五)",s:"模考"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"模考"}]
+        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中文"},{d:"07/24(五)",s:"模考"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英文"},{d:"07/31(五)",s:"模考"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"英文作"},{d:"08/06(四)",s:"英文作"},{d:"08/07(五)",s:"不開放",h:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數學"},{d:"08/14(五)",s:"模考"},{d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人文"},{d:"08/21(五)",s:"模考"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"模考"}]
     },
     secondary: {
         A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"數學"},{d:"06/25(四)",s:"數學"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"科學"},{d:"07/01(三)",s:"假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言文"},{d:"07/14(二)",s:"文言文"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)","s":"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
