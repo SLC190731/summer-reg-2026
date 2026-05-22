@@ -1,0 +1,76 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1779179260173,
+      "tag": "0000_aberrant_carnage",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1779188645388,
+      "tag": "0001_even_apocalypse",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1779188946550,
+      "tag": "0002_pretty_skin",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1779215265968,
+      "tag": "0003_natural_black_crow",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1779217810589,
+      "tag": "0004_lyrical_storm",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1779221187125,
+      "tag": "0005_open_harry_osborn",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1779290838794,
+      "tag": "0006_open_doomsday",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1779303039091,
+      "tag": "0007_spicy_speed",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1779383951532,
+      "tag": "0008_late_adam_destine",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "5",
+      "when": 1779386086365,
+      "tag": "0009_goofy_hairball",
+      "breakpoints": true
+    }
+  ]
+}

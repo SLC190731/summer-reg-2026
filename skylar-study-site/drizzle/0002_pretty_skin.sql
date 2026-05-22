@@ -1,0 +1,1 @@
+ALTER TABLE `true_or_false_questions` ADD `explanation` text;
