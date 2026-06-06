@@ -16,7 +16,11 @@
         .logo-area h1 { font-size: 1.8em; margin: 0; color: var(--accent-blue); }
         .info-area { text-align: right; font-size: 0.85em; color: #795548; line-height: 1.6; }
         .info-area .company-cn { color: var(--accent-blue); font-size: 1.4em; font-weight: bold; display: block; }
+        
+        /* 月曆網格基礎（5欄，代表星期一至五） */
         .calendar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; }
+        .calendar-weeks-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; font-weight: bold; text-align: center; background: #F5EFE6; padding: 6px 0; border-radius: 6px; font-size: 14px; }
+        
         .day { padding: 8px; border: 1px solid #D7CCC8; text-align: center; cursor: pointer; border-radius: 8px; background: #FFFFFF; min-height: 80px; display: flex; flex-direction: column; justify-content: center; transition: 0.2s; }
         .day.selected { background: var(--accent-blue) !important; color: white !important; font-weight: bold; }
         .day.oxford { border: 2px solid #D4A373; background: #FEFAE0; color: #BC6C25; }
@@ -28,7 +32,7 @@
         .btn { background: var(--accent-blue); color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: bold; width: 100%; margin-top: 15px; }
         input, select { padding: 12px; width: 100%; margin-top: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1em; }
         
-        /* 管理中心樣式 */
+        /* 管理中心與彈窗樣式 */
         #adminPanel { background: var(--light-panel-bg); padding: 25px; border-radius: 12px; border: 2px solid var(--border-color); margin-top: 50px; display: none; }
         .stat-group { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center; }
         .stat-badge { padding: 10px 15px; border-radius: 8px; font-weight: bold; font-size: 0.9em; color: white; text-align: center; min-width: 120px; }
@@ -36,20 +40,21 @@
         .admin-table th, .admin-table td { border: 1px solid var(--border-color); padding: 8px; text-align: center; }
         .clickable-name { color: #0288D1; font-weight: bold; cursor: pointer; text-decoration: underline; }
         
-        /* 彈窗基本設定 */
         #dailyListModal, #parentNoticeModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; }
         .modal-content { background: #fff; width: 95%; max-width: 1100px; margin: 1% auto; padding: 30px; height: 95vh; overflow-y: auto; border-radius: 15px; color: var(--soft-brown); user-select: text; }
         
-        /* 月曆化名單與通知書新樣式 */
-        .month-section-title { font-size: 1.3em; font-weight: bold; color: #01579B; border-left: 6px solid #0288D1; padding-left: 10px; margin-top: 25px; margin-bottom: 10px; text-align: left; }
-        .cal-box-day { border: 1px solid #D7CCC8; padding: 6px; min-height: 105px; background: #FFFFFF; font-size: 12px; border-radius: 6px; display: flex; flex-direction: column; justify-content: flex-start; text-align: left; }
-        .cal-box-day.not-active { opacity: 0.2; background: #F5F5F5; }
+        .month-section-title { font-size: 1.3em; font-weight: bold; color: #01579B; border-left: 6px solid #0288D1; padding-left: 10px; margin-top: 25px; margin-bottom: 5px; text-align: left; }
+        
+        /* 補丁：真實月曆格子樣式 */
+        .cal-box-day { border: 1px solid #D7CCC8; padding: 6px; min-height: 115px; background: #FFFFFF; font-size: 12px; border-radius: 6px; display: flex; flex-direction: column; justify-content: flex-start; text-align: left; }
+        .cal-box-day.empty-day { background: #FAFAFA; border: 1px dashed #DDD; opacity: 0.4; cursor: default; }
         .cal-box-day b { color: #333; display: block; border-bottom: 1px solid #E0D8C0; padding-bottom: 2px; margin-bottom: 4px; font-size: 13px; }
         .cal-student-tag { display: block; background: #E1F5FE; color: #01579B; padding: 2px 4px; border-radius: 3px; font-weight: bold; margin-bottom: 2px; font-size: 11px; border-left: 2px solid #0288D1; line-height: 1.2; }
         .cal-student-tag span { color: #E65100; font-size: 10px; font-weight: normal; }
         
         /* 個人通知書專用月曆格 */
-        .notice-cal-day { border: 1px solid #D7CCC8; padding: 8px; min-height: 85px; background: #FAFAFA; border-radius: 6px; opacity: 0.25; transition: 0.2s; }
+        .notice-cal-day { border: 1px solid #D7CCC8; padding: 8px; min-height: 90px; background: #FAFAFA; border-radius: 6px; opacity: 0.25; }
+        .notice-cal-day.empty-day { background: #FAFAFA; border: 1px dashed #DDD; opacity: 0.15; }
         .notice-cal-day.active-class { opacity: 1 !important; background: #E4F2E6 !important; border: 2px solid #2e7d32 !important; }
         .notice-cal-day b { font-size: 13px; color: #333; display: block; margin-bottom: 4px; }
         .notice-subject-text { color: #E65100; font-weight: bold; font-size: 12px; display: block; margin-top: 5px; }
@@ -57,25 +62,17 @@
         .sync-loader { color: #e67e22; font-weight: bold; animation: blink 1s infinite; margin-bottom: 10px; text-align: center; }
         @keyframes blink { 50% { opacity: 0.3; } }
 
-        /* 🖨 列印控制：精準控制只列印彈窗內容 */
         @media print {
             @page { margin: 0.5cm; size: A4; }
             body { background: white !important; }
             .container, .no-print, .btn, #adminToggle, #adminPanel { display: none !important; }
-            
-            /* 當處於列印家長通知書模式 */
             body.print-mode-notice #parentNoticeModal { display: block !important; position: static !important; background: white !important; width: 100% !important; height: auto !important; overflow: visible !important; }
             body.print-mode-notice #parentNoticeModal .modal-content { width: 100% !important; height: auto !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; }
-            
-            /* 當處於列印導師每日名單模式 */
             body.print-mode-daily #dailyListModal { display: block !important; position: static !important; background: white !important; width: 100% !important; height: auto !important; overflow: visible !important; }
             body.print-mode-daily #dailyListModal .modal-content { width: 100% !important; height: auto !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; }
-            
-            /* 當處於列印行政統計模式 */
             body.print-mode-admin .container { display: block !important; box-shadow: none !important; padding: 0 !important; }
             body.print-mode-admin #adminPanel { display: block !important; margin-top: 10px !important; }
             body.print-mode-admin .page, body.print-mode-admin .header { display: none !important; }
-            
             .calendar-grid { grid-template-columns: repeat(5, 1fr) !important; gap: 5px !important; }
         }
     </style>
@@ -174,10 +171,9 @@
             <h2 style="color:#4A6D8C; margin:0;">2026多元智能暑期課程 - 學生上課月曆通知書</h2>
             <p style="font-size:0.9em; color:#666; margin:5px 0 0 0;">博學堂行政部發出 (地址：慧星滙S39號舖 / 電話：2994 8664)</p>
         </div>
-        <p>親愛的家長：您的孩子 <strong id="noticeStuName" style="color:#0288D1; font-size:1.15em;"></strong> 專屬的暑期上課時間表（已串接科目）如下，請儲存或列印以作留存：</p>
+        <p>親愛的家長：您的孩子 <strong id="noticeStuName" style="color:#0288D1; font-size:1.15em;"></strong> 專屬的暑期上課時間表（已對齊星期一）如下：</p>
         
-        <div id="noticeCalendarContainer">
-            </div>
+        <div id="noticeCalendarContainer"></div>
 
         <div class="result-box" style="background:#F5F5F5; border-left-color:#4A6D8C; margin-top:20px;">
             <p>💰 費用總額：<strong>$<span id="noticeTotal"></span></strong> （學費分期：$<span id="noticeInst"></span> x 6期）</p>
@@ -194,14 +190,13 @@
 <div id="dailyListModal">
     <div class="modal-content">
         <div style="display:flex; justify-content: space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;">
-            <h3 style="margin:0;">📅 導師專用：暑期每日上課學生名單看板 (按月曆排版)</h3>
+            <h3 style="margin:0;">📅 導師專用：暑期每日上課學生名單看板 (完美對齊星期一)</h3>
             <div class="no-print">
                 <button class="btn" style="background:#0288D1; width:auto; margin:0;" onclick="window.print()">🖨 列印月曆名單</button>
                 <button class="btn" style="background:#795548; width:auto; margin:0;" onclick="document.getElementById('dailyListModal').style.display='none'; document.body.className='';">關閉</button>
             </div>
         </div>
-        <div id="dailyMonthContainer">
-            </div>
+        <div id="dailyMonthContainer"></div>
     </div>
 </div>
 
@@ -215,9 +210,14 @@ const PRICING = {
 const GRADE_ORDER = { "升小一":1, "升小二":2, "升小三":3, "升小四":4, "升小五":5, "升小六":6, "升中一或以上":7 };
 const DATA_GROUP = { p1:"p1p3p6", p2:"p1p3p6", p3:"p1p3p6", p6:"p1p3p6", p4:"p4p5", p5:"p4p5", secondary:"secondary" };
 
+// 2026年 6, 7, 8 月的「星期一對齊空位數」定義
+// 6/22(一) 開首即為星期一，不需補空位
+// 7/1(三) 是星期三，週一到週五格中，前面需補 2 個週一週二空位
+// 8/1(六) 週末不計，8/3(一) 開首即為週一，不需補空位
+const MONTH_PADDING = { "06": 0, "07": 2, "08": 0 };
+
 let selA = new Set(), selB = new Set(), cloudRecords = [];
 
-// 基礎報名運算
 function updateEstimates() {
     const g = document.getElementById('stuGrade').value;
     const optMaxA = document.getElementById('optMaxA');
@@ -271,22 +271,20 @@ function submitAndGoToStep3() {
     document.getElementById('page3').classList.add('active');
 }
 
-// 家長直接填完產生通知書
 function triggerNoticeFromForm() {
     buildParentNoticeCalendar(document.getElementById('stuName').value, document.getElementById('stuGrade').selectedOptions[0].text, document.getElementById('estTotal').innerText, document.getElementById('estInstallment').innerText, Array.from(selA), Array.from(selB));
 }
 
-// 行政從後台點擊姓名觸發補印通知書
 function triggerNoticeFromAdmin(index) {
     const r = cloudRecords[index]; if(!r) return;
     const inst = Math.round(Number(r.total) / 6);
     buildParentNoticeCalendar(r.name, r.gradeText, r.total, inst, r.detailsA || [], r.detailsB || []);
 }
 
-// 核心：建立家長個人化「月曆通知書」
+// 1️⃣ 修正版：建立家長個人化「星期一開首」月曆通知書
 function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB) {
     document.getElementById('parentNoticeModal').style.display = 'block';
-    document.body.className = 'print-mode-notice'; // 切換至只列印通知書模式
+    document.body.className = 'print-mode-notice';
     
     document.getElementById('noticeStuName').innerText = name + " (" + gradeText + ")";
     document.getElementById('noticeTotal').innerText = total;
@@ -298,9 +296,20 @@ function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB) {
 
     ["06", "07", "08"].forEach(m => {
         let title = document.createElement('div'); title.className = 'month-section-title'; title.innerText = `2026年 ${m}月`; container.appendChild(title);
+        
+        // 星期一至五 表頭
+        let weeksHeader = document.createElement('div'); weeksHeader.className = 'calendar-weeks-header';
+        weeksHeader.innerHTML = '<div>星期一 (Mon)</div><div>星期二 (Tue)</div><div>星期三 (Wed)</div><div>星期四 (Thu)</div><div>星期五 (Fri)</div>';
+        container.appendChild(weeksHeader);
+
         let grid = document.createElement('div'); grid.className = 'calendar-grid';
         
-        // 抓取該月份的所有基礎有效課程日期
+        // 補上對齊星期一的空白格
+        let paddingCount = MONTH_PADDING[m] || 0;
+        for(let p=0; p<paddingCount; p++) {
+            let emp = document.createElement('div'); emp.className = 'notice-cal-day empty-day'; emp.innerHTML = '<b>-</b>'; grid.appendChild(emp);
+        }
+        
         let mDates = new Set();
         Object.values(SCHEDULE_MASTER).forEach(g => g.A.concat(g.B).forEach(i => { if(i.d.startsWith(m)) mDates.add(i.d); }));
         let sortedMDates = Array.from(mDates).sort((a,b)=>a.localeCompare(b));
@@ -312,8 +321,8 @@ function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB) {
             
             let hasA = setA.has(dStr), hasB = setB.has(dStr);
             let displayText = "";
-            if(hasA) displayText += `[A] ${subA?subA.s:""} `;
-            if(hasB) displayText += `[B] ${subB?subB.s:""} `;
+            if(hasA) displayText += `[A]${subA?subA.s:""} `;
+            if(hasB) displayText += `[B]${subB?subB.s:""} `;
             
             box.innerHTML = `<b>${dStr}</b>`;
             if(hasA || hasB) {
@@ -328,10 +337,10 @@ function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB) {
     });
 }
 
-// 核心：建立導師全體學生「每日名單月曆看板」
+// 2️⃣ 修正版：建立導師全體學生「星期一開首」大點名月曆看板
 function showDailyModal() {
     document.getElementById('dailyListModal').style.display = 'block';
-    document.body.className = 'print-mode-daily'; // 切換至只列印導師名單模式
+    document.body.className = 'print-mode-daily';
     const container = document.getElementById('dailyMonthContainer'); container.innerHTML = '正在整理全體雲端月曆數據...';
     if (cloudRecords.length === 0) refreshFromSheets();
 
@@ -339,7 +348,18 @@ function showDailyModal() {
         container.innerHTML = '';
         ["06", "07", "08"].forEach(m => {
             let title = document.createElement('div'); title.className = 'month-section-title'; title.innerText = `2026年 ${m}月 大點名看板`; container.appendChild(title);
+            
+            let weeksHeader = document.createElement('div'); weeksHeader.className = 'calendar-weeks-header';
+            weeksHeader.innerHTML = '<div>星期一 (Mon)</div><div>星期二 (Tue)</div><div>星期三 (Wed)</div><div>星期四 (Thu)</div><div>星期五 (Fri)</div>';
+            container.appendChild(weeksHeader);
+
             let grid = document.createElement('div'); grid.className = 'calendar-grid';
+            
+            // 補上對齊星期一的空白格
+            let paddingCount = MONTH_PADDING[m] || 0;
+            for(let p=0; p<paddingCount; p++) {
+                let emp = document.createElement('div'); emp.className = 'cal-box-day empty-day'; emp.innerHTML = '<b>-</b>'; grid.appendChild(emp);
+            }
             
             let mDates = new Set();
             Object.values(SCHEDULE_MASTER).forEach(g => g.A.concat(g.B).forEach(i => { if(i.d.startsWith(m)) mDates.add(i.d); }));
@@ -348,11 +368,8 @@ function showDailyModal() {
             sortedMDates.forEach(dStr => {
                 let box = document.createElement('div'); box.className = 'cal-box-day';
                 box.innerHTML = `<b>${dStr}</b>`;
+                let studentListHtml = ""; let todayCount = 0;
                 
-                let studentListHtml = "";
-                let todayCount = 0;
-                
-                // 篩選當天有課的全體學生
                 cloudRecords.forEach(r => {
                     let hasA = r.detailsA && r.detailsA.includes(dStr);
                     let hasB = r.detailsB && r.detailsB.includes(dStr);
@@ -362,7 +379,6 @@ function showDailyModal() {
                         let subA = SCHEDULE_MASTER[grp].A.find(x => x.d === dStr);
                         let subB = SCHEDULE_MASTER[grp].B.find(x => x.d === dStr);
                         let subName = (hasA ? (subA?subA.s:"A") : "") + (hasB ? (subB?subB.s:"B") : "");
-                        
                         studentListHtml += `<span class="cal-student-tag">${r.name} <span>(${subName})</span></span>`;
                     }
                 });
@@ -370,8 +386,7 @@ function showDailyModal() {
                 if(todayCount > 0) {
                     box.innerHTML += `<span style="color:#0288D1;font-weight:bold;font-size:10px;margin-bottom:4px;">總人數: ${todayCount}人</span>` + studentListHtml;
                 } else {
-                    box.classList.add('not-active');
-                    box.innerHTML += `<span style="color:#ccc;">(無學生)</span>`;
+                    box.classList.add('not-active'); box.innerHTML += `<span style="color:#ccc;">(無學生)</span>`;
                 }
                 grid.appendChild(box);
             });
@@ -380,7 +395,6 @@ function showDailyModal() {
     }, 400);
 }
 
-// 後台基礎同步與權限
 function refreshFromSheets() {
     document.getElementById('syncStatus').style.display = 'block';
     fetch(scriptURL).then(res => res.json()).then(data => {
@@ -412,11 +426,11 @@ function triggerAdminPrint() { document.body.className = 'print-mode-admin'; win
 const SCHEDULE_MASTER = {
     p1p3p6: {
         A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(four)",s:"英文"},{d:"07/24(五)",s:"英文"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文作"},{d:"07/29(三)",s:"英文作"},{d:"07/30(四)",s:"英文作"},{d:"07/31(五)",s:"英文作"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"中文作"},{d:"08/06(四)",s:"中文作"},{d:"08/07(五)",s:"不開放",h:true},{d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"中文"},{d:"08/14(五)",s:"中文"},{d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"數學"},{d:"08/21(五)",s:"數學"},{d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(四)",s:"常識"},{d:"08/28(五)",s:"常識"}]
+        B: [{d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(四)",s:"英文"},{d:"07/24(五)",s:"英文"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文作"},{d:"07/29(三)",s:"英文作"},{d:"07/30(四)",s:"英文作"},{d:"07/31(五)",s:"英文作"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"中文作"},{d:"08/06(四)",s:"中文作"},{d:"08/07(五)",s:"不開放",h:true},{d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"中文"},{d:"08/14(五)",s:"中文"},{d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"數學"},{d:"08/21(五)",s:"數學"},{d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(四)",s:"常識"},{d:"08/28(五)",s:"常識"}]
     },
     p4p5: {
         A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中文"},{d:"07/24(五)",s:"模考"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英文"},{d:"07/31(五)",s:"模考"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"英文作"},{d:"08/06(四)",s:"英文作"},{d:"08/07(五)",s:"不開放",h:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(four)",s:"數學"},{d:"08/14(五)",s:"模考"},{d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人文"},{d:"08/21(五)",s:"模考"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"模考"}]
+        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中文"},{d:"07/24(五)",s:"模考"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英文"},{d:"07/31(五)",s:"模考"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"英文作"},{d:"08/06(四)",s:"英文作"},{d:"08/07(五)",s:"不開放",h:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數學"},{d:"08/14(五)",s:"模考"},{d:"08/17(one)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人文"},{d:"08/21(五)",s:"模考"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"模考"}]
     },
     secondary: {
         A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"數學"},{d:"06/25(四)",s:"數學"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"科學"},{d:"07/01(三)",s:"假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言文"},{d:"07/14(二)",s:"文言文"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)","s":"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
