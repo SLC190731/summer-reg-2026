@@ -102,9 +102,13 @@
             <input type="text" id="stuName" placeholder="學生中文全名">
             <select id="stuGender"><option value="男">男</option><option value="女">女</option></select>
             <select id="stuGrade" onchange="updateEstimates()">
-                <option value="p1">升小一</option><option value="p2">升小二</option><option value="p3">升小三</option>
-                <option value="p4">升小四</option><option value="p5">升小五</option><option value="p6">升小六</option>
-                <option value="secondary">升中一或以上</option>
+                <option value="升小一">升小一</option>
+                <option value="升小二">升小二</option>
+                <option value="升小三">升小三</option>
+                <option value="升小四">升小四</option>
+                <option value="升小五">升小五</option>
+                <option value="升小六">升小六</option>
+                <option value="升中一或以上">升中一或以上</option>
             </select>
         </div>
         <div class="section">
@@ -206,11 +210,10 @@
 const scriptURL = 'https://script.google.com/macros/s/AKfycbytG9-GmPKQnHUazB0Lm6YyzE0plxtwrnz0BLUxL6xZ4FKE1qyon0AaMZ2qG3xuJ1oz/exec'; 
 
 const PRICING = {
-    secondary: { A: {12:2760, 16:3540, 19:4310}, B: {20:10080, 24:11760, 29:13440}, C_WithB: {20:3120, 24:3000, 29:2940}, C_Single: 3980 },
-    primary: { A: {12:2520, 16:3240, 18:3780}, B: {20:8880, 24:10320, 29:12150}, C_WithB: {20:3060, 24:2790, 29:2640}, C_Single: 3250 }
+    "升中一或以上": { A: {12:2760, 16:3540, 19:4310}, B: {20:10080, 24:11760, 29:13440}, C_WithB: {20:3120, 24:3000, 29:2940}, C_Single: 3980 },
+    "升小": { A: {12:2520, 16:3240, 18:3780}, B: {20:8880, 24:10320, 29:12150}, C_WithB: {20:3060, 24:2790, 29:2640}, C_Single: 3250 }
 };
 const GRADE_ORDER = { "升小一":1, "升小二":2, "升小三":3, "升小四":4, "升小五":5, "升小六":6, "升中一或以上":7 };
-const DATA_GROUP = { p1:"p1p3p6", p2:"p1p3p6", p3:"p1p3p6", p6:"p1p3p6", p4:"p4p5", p5:"p4p5", secondary:"secondary" };
 
 // 核心時間軸資料結構
 const FULL_CALENDAR_AXIS = {
@@ -238,27 +241,48 @@ const FULL_CALENDAR_AXIS = {
 function updateEstimates() {
     const g = document.getElementById('stuGrade').value;
     const optMaxA = document.getElementById('optMaxA');
-    optMaxA.value = (g === 'secondary' ? "19" : "18"); optMaxA.text = optMaxA.value + " 堂";
+    optMaxA.value = (g === '升中一或以上' ? "19" : "18"); optMaxA.text = optMaxA.value + " 堂";
     const nA = Number(document.getElementById('planA').value), nB = Number(document.getElementById('planB').value), isC = document.getElementById('planC').checked;
-    const p = PRICING[g==='secondary'?'secondary':'primary'];
+    const p = PRICING[g==='升中一或以上'?'升中一或以上':'升小'];
     let fA = p.A[nA] || 0, fB = p.B[nB] || 0, fC = isC ? (nB>0 ? (p.C_WithB[nB] || p.C_Single) : p.C_Single) : 0;
     document.getElementById('estTotal').innerText = fA + fB + fC;
     document.getElementById('estInstallment').innerText = Math.round((fA + fB + fC) / 6);
     document.getElementById('estDetail').innerText = `A: $${fA} | B: $${fB} | C: $${fC}`;
 }
 
+function getScheduleGroup(gradeText) {
+    if (gradeText.includes("中")) return "secondary";
+    if (gradeText.includes("四") || gradeText.includes("五")) return "p4p5";
+    return "p1p3p6";
+}
+
 function goToStep2() {
-    if (!document.getElementById('stuName').value) return alert("請輸入姓名");
+    const name = document.getElementById('stuName').value;
+    if (!name) return alert("請輸入姓名");
+    const grade = document.getElementById('stuGrade').value;
+    
     document.getElementById('page1').classList.remove('active');
     document.getElementById('page2').classList.add('active');
-    document.getElementById('studentInfoBar').innerText = `學生：${document.getElementById('stuName').value}`;
-    renderCal('calA', SCHEDULE_MASTER[DATA_GROUP[document.getElementById('stuGrade').value]].A, selA, 'planA', 'curA');
-    renderCal('calB', SCHEDULE_MASTER[DATA_GROUP[document.getElementById('stuGrade').value]].B, selB, 'planB', 'curB');
+    document.getElementById('studentInfoBar').innerText = `學生：${name} (${grade})`;
+    
+    const targetGroup = getScheduleGroup(grade);
+    selA.clear(); selB.clear();
+    document.getElementById('curA').innerText = "0";
+    document.getElementById('curB').innerText = "0";
+    document.getElementById('maxA').innerText = document.getElementById('planA').value;
+    document.getElementById('maxB').innerText = document.getElementById('planB').value;
+    
+    renderCal('calA', SCHEDULE_MASTER[targetGroup].A, selA, 'planA', 'curA');
+    renderCal('calB', SCHEDULE_MASTER[targetGroup].B, selB, 'planB', 'curB');
 }
 
 function renderCal(id, data, set, pId, curId, readonly = false) {
     const container = document.getElementById(id), limit = Number(document.getElementById(pId).value);
     container.innerHTML = '';
+    if (limit === 0) {
+        container.innerHTML = '<div style="color:#aaa; padding:15px; grid-column:span 5; text-align:center;">此方案您選擇了「不參加」，不需選日子。</div>';
+        return;
+    }
     data.forEach(item => {
         const d = document.createElement('div');
         d.className = 'day' + (item.ox ? ' oxford' : '') + (item.h ? ' holiday' : '');
@@ -276,20 +300,22 @@ function renderCal(id, data, set, pId, curId, readonly = false) {
 }
 
 function submitAndGoToStep3() {
-    const r = { name: document.getElementById('stuName').value, gender: document.getElementById('stuGender').value, gradeText: document.getElementById('stuGrade').selectedOptions[0].text, total: document.getElementById('estTotal').innerText, countA: selA.size, countB: selB.size, detailsA: Array.from(selA), detailsB: Array.from(selB), hasPartC: document.getElementById('planC').checked, timestamp: new Date().toLocaleString() };
+    const r = { name: document.getElementById('stuName').value, gender: document.getElementById('stuGender').value, gradeText: document.getElementById('stuGrade').value, total: document.getElementById('estTotal').innerText, countA: selA.size, countB: selB.size, detailsA: Array.from(selA), detailsB: Array.from(selB), hasPartC: document.getElementById('planC').checked, timestamp: new Date().toLocaleString() };
     fetch(scriptURL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(r) });
     document.getElementById('resName').innerText = r.name;
     document.getElementById('resGrade').innerText = r.gradeText;
     document.getElementById('resTotal').innerText = r.total;
     document.getElementById('resInst').innerText = document.getElementById('estInstallment').innerText;
-    renderCal('resCalA', SCHEDULE_MASTER[DATA_GROUP[document.getElementById('stuGrade').value]].A, selA, 'planA', '', true);
-    renderCal('resCalB', SCHEDULE_MASTER[DATA_GROUP[document.getElementById('stuGrade').value]].B, selB, 'planB', '', true);
+    
+    const targetGroup = getScheduleGroup(r.gradeText);
+    renderCal('resCalA', SCHEDULE_MASTER[targetGroup].A, selA, 'planA', '', true);
+    renderCal('resCalB', SCHEDULE_MASTER[targetGroup].B, selB, 'planB', '', true);
     document.getElementById('page2').classList.remove('active');
     document.getElementById('page3').classList.add('active');
 }
 
 function triggerNoticeFromForm() {
-    buildParentNoticeCalendar(document.getElementById('stuName').value, document.getElementById('stuGrade').selectedOptions[0].text, document.getElementById('estTotal').innerText, document.getElementById('estInstallment').innerText, Array.from(selA), Array.from(selB));
+    buildParentNoticeCalendar(document.getElementById('stuName').value, document.getElementById('stuGrade').value, document.getElementById('estTotal').innerText, document.getElementById('estInstallment').innerText, Array.from(selA), Array.from(selB));
 }
 
 function triggerNoticeFromAdmin(index) {
@@ -307,7 +333,7 @@ function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB) {
     document.getElementById('noticeInst').innerText = inst;
     
     const container = document.getElementById('noticeCalendarContainer'); container.innerHTML = '';
-    const group = gradeText.includes("中") ? "secondary" : (["升小一","升小二","升小三","升小六"].some(x=>gradeText.includes(x)) ? "p1p3p6" : "p4p5");
+    const group = getScheduleGroup(gradeText);
     const setA = new Set(arrA), setB = new Set(arrB);
 
     Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
@@ -378,7 +404,7 @@ function showDailyModal() {
                         let hasB = r.detailsB && r.detailsB.includes(cell.d);
                         if(hasA || hasB) {
                             todayCount++;
-                            let grp = r.gradeText.includes("中") ? "secondary" : (["升小一","升小二","升小三","升小六"].some(x=>r.gradeText.includes(x)) ? "p1p3p6" : "p4p5");
+                            let grp = getScheduleGroup(r.gradeText);
                             let subA = SCHEDULE_MASTER[grp].A.find(x => x.d === cell.d);
                             let subB = SCHEDULE_MASTER[grp].B.find(x => x.d === cell.d);
                             let subName = (hasA ? (subA?subA.s:"A") : "") + (hasB ? (subB?subB.s:"B") : "");
@@ -434,15 +460,15 @@ function triggerAdminPrint() { document.body.className = 'print-mode-admin'; win
 const SCHEDULE_MASTER = {
     p1p3p6: {
         A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(four)",s:"英文"},{d:"07/24(五)",s:"英文"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文作"},{d:"07/29(三)",s:"英文作"},{d:"07/30(四)",s:"英文作"},{d:"07/31(五)",s:"英文作"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"中文作"},{d:"08/06(四)",s:"中文作"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(one)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"中文"},{d:"08/14(五)",s:"中文"},{d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(four)",s:"數學"},{d:"08/21(五)",s:"數學"},{d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(four)",s:"常識"},{d:"08/28(五)",s:"常識"}]
+        B: [{d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(四)",s:"英文"},{d:"07/24(五)",s:"英文"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文作"},{d:"07/29(三)",s:"英文作"},{d:"07/30(四)",s:"英文作"},{d:"07/31(五)",s:"英文作"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"中文作"},{d:"08/06(四)",s:"中文作"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"中文"},{d:"08/14(五)",s:"中文"},{d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"數學"},{d:"08/21(五)",s:"數學"},{d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(四)",s:"常識"},{d:"08/28(五)",s:"常識"}]
     },
     p4p5: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(four)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(one)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(four)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(four)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(four)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(一)",s:"中文"},{d:"07/24(五)",s:"模考"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英文"},{d:"07/31(五)",s:"模考"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"英文作"},{d:"08/06(四)",s:"英文作"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數學"},{d:"08/14(五)",s:"模考"},{d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人文"},{d:"08/21(五)",s:"模考"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"模考"}]
+        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中文"},{d:"07/24(五)",s:"模考"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英文"},{d:"07/31(五)",s:"模考"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"英文作"},{d:"08/06(四)",s:"英文作"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數學"},{d:"08/14(五)",s:"模考"},{d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人文"},{d:"08/21(五)",s:"模考"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(four)",s:"科學"},{d:"08/28(五)",s:"模考"}]
     },
     secondary: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"數學"},{d:"06/25(四)",s:"數學"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"科學"},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言文"},{d:"07/14(二)",s:"文言文"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"數學"},{d:"07/21(二)",s:"中文週"},{d:"07/22(三)",s:"中文週"},{d:"07/23(四)",s:"中文週"},{d:"07/24(五)",s:"中文週"},{d:"07/27(一)",s:"中文週"},{d:"07/28(二)",s:"中文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},{d:"08/03(一)",s:"英文週"},{d:"08/04(二)",s:"英文週"},{d:"08/05(三)",s:"英文週"},{d:"08/06(四)",s:"英文週"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"地史"},{d:"08/11(二)",s:"地史"},{d:"08/12(三)",s:"地史"},{d:"08/13(四)",s:"地史"},{d:"08/14(五)",s:"中心不開放",h:true},{d:"08/17(一)",s:"數學週"},{d:"08/18(二)",s:"數學週"},{d:"08/19(三)",s:"數學週"},{d:"08/20(四)",s:"數學週"},{d:"08/21(五)",s:"數學週"},{d:"08/24(一)",s:"科學史"},{d:"08/25(二)",s:"科學史"},{d:"08/26(三)",s:"科學史"},{d:"08/27(四)",s:"科學史"},{d:"08/28(五)",s:"科學史"}]
+        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"數學"},{d:"06/25(四)",s:"數學"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"科學"},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(four)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言文"},{d:"07/14(二)",s:"文言文"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)","s":"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        B: [{d:"07/20(一)",s:"數學"},{d:"07/21(二)",s:"中文週"},{d:"07/22(三)",s:"中文週"},{d:"07/23(四)",s:"中文週"},{d:"07/24(五)",s:"中文週"},{d:"07/27(一)",s:"中文週"},{d:"07/28(二)",s:"中文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},{d:"08/03(一)",s:"英文週"},{d:"08/04(二)",s:"英文週"},{d:"08/05(三)",s:"英文週"},{d:"08/06(four)",s:"英文週"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"地史"},{d:"08/11(二)",s:"地史"},{d:"08/12(三)",s:"地史"},{d:"08/13(four)",s:"地史"},{d:"08/14(五)",s:"中心不開放",h:true},{d:"08/17(一)",s:"數學週"},{d:"08/18(二)",s:"數學週"},{d:"08/19(三)",s:"數學週"},{d:"08/20(four)",s:"數學週"},{d:"08/21(五)",s:"數學週"},{d:"08/24(一)",s:"科學史"},{d:"08/25(二)",s:"科學史"},{d:"08/26(three)",s:"科學史"},{d:"08/27(four)",s:"科學史"},{d:"08/28(five)",s:"科學史"}]
     }
 };
 updateEstimates();
