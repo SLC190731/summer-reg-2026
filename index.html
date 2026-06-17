@@ -18,16 +18,13 @@
         .info-area { text-align: right; font-size: 0.85em; color: #795548; line-height: 1.6; }
         .info-area .company-cn { color: var(--accent-blue); font-size: 1.4em; font-weight: bold; display: block; }
         
-        /* 融合月曆格線 */
         .calendar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; }
         .calendar-weeks-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; font-weight: bold; text-align: center; background: #F5EFE6; padding: 8px 0; border-radius: 6px; font-size: 14px; color: var(--soft-brown); border: 1px solid var(--border-color); }
         
-        /* 單個格子設定 */
         .day { padding: 8px; border: 1px solid #D7CCC8; text-align: center; cursor: pointer; border-radius: 8px; background: #FFFFFF; min-height: 105px; display: flex; flex-direction: column; justify-content: center; transition: 0.2s; position: relative; font-size: 14px; }
         .day span.date-label { font-size: 13px; font-weight: bold; color: #777; display: block; margin-bottom: 2px; }
         .day strong.subject-label { font-size: 14px; color: #333; display: block; margin-top: 2px; line-height: 1.3; }
         
-        /* 不同類別的色彩視覺表現 */
         .day.selected-a { background: #4A6D8C !important; color: white !important; font-weight: bold; }
         .day.selected-a strong.subject-label { color: white !important; }
         .day.selected-b { background: #D4A373 !important; color: white !important; font-weight: bold; }
@@ -36,7 +33,6 @@
         .day.selected-sp strong.subject-label { color: white !important; }
         .day.holiday { background: #F8EDEB; color: #E5989B; cursor: not-allowed; opacity: 0.6; }
         
-        /* 內嵌下拉式選單樣式 */
         .day select.time-dropdown { width: 95%; margin-top: 6px; padding: 3px; font-size: 12px; border-radius: 4px; border: 1px solid #ccc; background: white; color: #333; cursor: pointer; font-weight: normal; }
         
         .readonly-cal .day { cursor: default; }
@@ -57,6 +53,7 @@
         .modal-content { background: #fff; width: 95%; max-width: 1100px; margin: 1% auto; padding: 30px; height: 95vh; overflow-y: auto; border-radius: 15px; color: var(--soft-brown); user-select: text; }
         
         .month-section-title { font-size: 1.3em; font-weight: bold; color: #01579B; border-left: 6px solid #0288D1; padding-left: 10px; margin-top: 25px; margin-bottom: 5px; text-align: left; }
+        .board-type-header { font-size: 1.5em; font-weight: bold; color: #fff; background: #333; padding: 10px 15px; border-radius: 6px; margin-top: 35px; text-align: left; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
         
         .cal-box-day { border: 1px solid #D7CCC8; padding: 6px; min-height: 140px; background: #FFFFFF; font-size: 12px; border-radius: 6px; display: flex; flex-direction: column; justify-content: flex-start; text-align: left; }
         .cal-box-day.empty-day { background: #FAF9F5; border: 1px dashed #DDD; opacity: 0.3; cursor: default; }
@@ -68,7 +65,7 @@
         .tag-bpm { background: #FFF3E0; color: #E65100; border-left-color: #FF9800; }
         .tag-sp { background: #F3E5F5; color: #4A148C; border-left-color: #9C27B0; }
         
-        .notice-cal-day { border: 1px solid #D7CCC8; padding: 8px; min-height: 100px; background: #FAFAFA; border-radius: 6px; opacity: 0.3; display: flex; flex-direction: column; justify-content: flex-start; text-align: left; position: relative; transition: 0.2s; }
+        .notice-cal-day { border: 1px solid #D7CCC8; padding: 8px; min-height: 110px; background: #FAFAFA; border-radius: 6px; opacity: 0.4; display: flex; flex-direction: column; justify-content: flex-start; text-align: left; position: relative; transition: 0.2s; }
         .notice-cal-day.empty-day { background: #FAF9F5; border: 1px dashed #DDD; opacity: 0.15; cursor: default; }
         .notice-cal-day.active-class { opacity: 1 !important; background: #E4F2E6 !important; border: 2px solid #2e7d32 !important; }
         .notice-cal-day b { font-size: 13px; color: #333; display: block; margin-bottom: 4px; }
@@ -78,7 +75,7 @@
         .notice-cal-day.reschedule-targetable:hover { background: #FFE0B2 !important; border-color: #d35400 !important; }
 
         .reschedule-btn-group { margin-top: auto; display: flex; gap: 4px; justify-content: flex-end; }
-        .action-mini-btn { padding: 2px 6px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; }
+        .action-mini-btn { padding: 2px 6px; font-size: 11px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; margin-top: auto; }
         .btn-change { background: #e67e22; }
         .btn-delete-rec { background: #d9534f; color: white; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
 
@@ -122,7 +119,7 @@
             <select id="stuGender"><option value="男">男</option><option value="女">女</option></select>
             <select id="stuGrade" onchange="updateEstimates()">
                 <option value="升小一">升小一</option><option value="升小二">升小二</option><option value="升小三">升小三</option>
-                <option value="升小四">升小四</option><option value="升小五">升小五</option><option value="升小六">升小六</option>
+                <option value="升小四">升小4</option><option value="升小五">升小五</option><option value="升小六">升小六</option>
                 <option value="升中一或以上">升中一或以上</option>
             </select>
         </div>
@@ -175,8 +172,11 @@
             <h3 style="color:#2e7d32; text-align:center;">🎉 報名資料已成功送出雲端！</h3>
             <p>學生姓名：<strong id="resName" style="font-size:1.2em; color:#4A6D8C;"></strong></p>
             <p>就讀年級：<strong id="resGrade"></strong></p>
+            
+            <h4 style="margin-top:20px; color:#555;">已選時間表（已自動依日期先後順序排列）：</h4>
             <div id="resUnifiedCalendar" class="calendar-grid readonly-cal"></div>
-            <div class="result-box" style="margin-top:15px;">
+            
+            <div class="result-box" style="margin-top:20px;">
                 <p>應付總額：<strong>$<span id="resTotal"></span></strong> | 學費分期：<strong><span id="resInst"></span></strong></p>
             </div>
         </div>
@@ -191,7 +191,7 @@
         <div class="stat-group" id="statContainer"></div>
         
         <div class="no-print" style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: center;">
-            <button class="btn" style="background: #e67e22; width: auto;" onclick="showDailyModal()">📅 每日上課名單融合大看板(月曆版)</button>
+            <button class="btn" style="background: #e67e22; width: auto;" onclick="showDailyModal()">📅 每日上課名單融合大看板 (分流核對版)</button>
             <button class="btn" style="background: #4A6D8C; width: auto;" onclick="triggerAdminPrint()">🖨 列印統計</button>
             <button class="btn" style="background: #2e7d32; width: auto;" onclick="refreshFromSheets()">🔄 手動同步雲端</button>
         </div>
@@ -224,10 +224,10 @@
         <div id="rescheduleNoticeBar" class="no-print" style="background:#FFF3CD; padding:12px; border-radius:8px; font-size:14px; border-left:5px solid #e67e22; color:#d35400; margin-bottom:15px; font-weight:bold;">
             💡 <b>滑鼠點擊直覺調堂：</b>點擊課堂格子的 <b>🔄調堂</b> 按鈕，月曆上的空日子會變黃色，接著直接點擊任何一個黃色格子即可秒換！
         </div>
-        <p>親愛的家長：您的孩子 <strong id="noticeStuName" style="color:#0288D1; font-size:1.15em;"></strong> 專屬時間表：</p>
+        <p>親愛的家長：您的孩子 <strong id="noticeStuName" style="color:#0288D1; font-size:1.15em;">-</strong> 專屬時間表：</p>
         <div id="noticeCalendarContainer"></div>
         <div class="result-box" style="background:#F5F5F5; border-left-color:#4A6D8C; margin-top:20px;">
-            <p>💰 費用總額：<strong>$<span id="noticeTotal"></span></strong> （學費分期：<span id="noticeInst"></span>）</p>
+            <p>💰 費用總額：<strong>$<span id="noticeTotal">-</span></strong> （學費分期：<span id="noticeInst">-</span>）</p>
         </div>
         <div class="no-print" style="display:flex; gap:10px; margin-top:20px;">
             <button class="btn" style="background:#0288D1;" onclick="window.print()">🖨 一鍵列印 / 儲存 PDF</button>
@@ -239,20 +239,12 @@
 <div id="dailyListModal">
     <div class="modal-content">
         <div style="display:flex; justify-content: space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:15px;">
-            <h3 style="margin:0;">📅 導師專用：暑期全功能融合每日上課點名看板 (已自動連動調堂結果)</h3>
+            <h3 style="margin:0;">📅 導師專用：暑期融合每日上課點名看板 (已分流 A 班、B 上午、B 下午三款月曆)</h3>
             <div class="no-print">
                 <button class="btn" style="background:#0288D1; width:auto; margin:0;" onclick="window.print()">🖨 列印融合名單</button>
                 <button class="btn" style="background:#795548; width:auto; margin:0;" onclick="document.getElementById('dailyListModal').style.display='none'; document.body.className='';">關閉</button>
             </div>
         </div>
-        
-        <div style="display:flex; gap:10px; margin-bottom:15px; font-size:12px; font-weight:bold;" class="no-print">
-            <span style="padding:4px 8px; background:#E3F2FD; color:#0D47A1; border-radius:3px;">■ Part A</span>
-            <span style="padding:4px 8px; background:#E8F5E9; color:#1B5E20; border-radius:3px;">■ Part B 上午班</span>
-            <span style="padding:4px 8px; background:#FFF3E0; color:#E65100; border-radius:3px;">■ Part B 下午班</span>
-            <span style="padding:4px 8px; background:#F3E5F5; color:#4A148C; border-radius:3px;">■ ⭐ 特選自選課堂</span>
-        </div>
-
         <div id="dailyMonthContainer"></div>
     </div>
 </div>
@@ -298,15 +290,15 @@ const FULL_CALENDAR_AXIS = {
 const SCHEDULE_MASTER = {
     p1p3p6: {
         A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語"},{d:"07/01(三)",s:"假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語"},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(四)",s:"英文"},{d:"07/24(五)",s:"英文"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文作"},{d:"07/29(三)",s:"英文作"},{d:"07/30(四)",s:"英文作"},{d:"07/31(五)",s:"英文作"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"中文作"},{d:"08/06(four)",s:"中文作"},{d:"08/07(五)",s:"假期",h:true},{d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"中文"},{d:"08/14(五)",s:"中文"},{d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"數學"},{d:"08/21(五)",s:"數學"},{d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(四)",s:"常識"},{d:"08/28(五)",s:"常識"}]
+        B: [{d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(四)",s:"英文"},{d:"07/24(五)",s:"英文"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文作"},{d:"07/29(三)",s:"英文作"},{d:"07/30(四)",s:"英文作"},{d:"07/31(五)",s:"英文作"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"中文作"},{d:"08/06(四)",s:"中文作"},{d:"08/07(五)",s:"假期",h:true},{d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(four)",s:"中文"},{d:"08/14(五)",s:"中文"},{d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"數學"},{d:"08/21(五)",s:"數學"},{d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(四)",s:"常識"},{d:"08/28(五)",s:"常識"}]
     },
     p4p5: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語"},{d:"07/01(三)",s:"假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(four)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語"},{d:"07/14(二)",s:"英文閱"},{d:"07/15(three)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中文"},{d:"07/24(五)",s:"模考"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英文"},{d:"07/31(五)",s:"模考"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"英文作"},{d:"08/06(四)",s:"英文作"},{d:"08/07(五)",s:"假期",h:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數學"},{d:"08/14(五)",s:"模考"},{d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人文"},{d:"08/21(五)",s:"模考"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"模考"}]
+        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語"},{d:"07/01(三)",s:"假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(four)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語"},{d:"07/14(二)",s:"英文閱"},{d:"07/15(three)",s:"英文作"},{d:"07/16(four)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中文"},{d:"07/24(五)",s:"模考"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英文"},{d:"07/31(五)",s:"模考"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"英文作"},{d:"08/06(四)",s:"英文作"},{d:"08/07(五)",s:"假期",h:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數學"},{d:"08/14(五)",s:"模考"},{d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人文"},{d:"08/21(五)",s:"模考"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(four)",s:"科學"},{d:"08/28(五)",s:"模考"}]
     },
     secondary: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"數學"},{d:"06/25(四)",s:"數學"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"科學"},{d:"07/01(三)",s:"假期",h:true},{d:"07/02(four)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(four)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言文"},{d:"07/14(二)",s:"文言文"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"數學"},{d:"07/21(二)",s:"中文週"},{d:"07/22(三)",s:"中文週"},{d:"07/23(四)",s:"中文週"},{d:"07/24(五)",s:"中文週"},{d:"07/27(一)",s:"中文週"},{d:"07/28(二)",s:"中文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},{d:"08/03(一)",s:"英文週"},{d:"08/04(二)",s:"英文週"},{d:"08/05(三)",s:"英文週"},{d:"08/06(四)",s:"英文週"},{d:"08/07(五)",s:"假期",h:true},{d:"08/10(一)",s:"地史"},{d:"08/11(二)",s:"地史"},{d:"08/12(三)",s:"地史"},{d:"08/13(four)",s:"地史"},{d:"08/14(五)",s:"中心不開放",h:true},{d:"08/17(一)",s:"數學週"},{d:"08/18(二)",s:"數學週"},{d:"08/19(三)",s:"數學週"},{d:"08/20(四)",s:"數學週"},{d:"08/21(五)",s:"數學週"},{d:"08/24(一)",s:"科學史"},{d:"08/25(二)",s:"科學史"},{d:"08/26(三)",s:"科學史"},{d:"08/27(四)",s:"科學史"},{d:"08/28(五)",s:"科學史"}]
+        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"數學"},{d:"06/25(四)",s:"數學"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"科學"},{d:"07/01(三)",s:"假期",h:true},{d:"07/02(four)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(three)",s:"中文作"},{d:"07/09(four)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言文"},{d:"07/14(二)",s:"文言文"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        B: [{d:"07/20(一)",s:"數學"},{d:"07/21(二)",s:"中文週"},{d:"07/22(three)",s:"中文週"},{d:"07/23(four)",s:"中文週"},{d:"07/24(五)",s:"中文週"},{d:"07/27(一)",s:"中文週"},{d:"07/28(二)",s:"中文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},{d:"08/03(一)",s:"英文週"},{d:"08/04(二)",s:"英文週"},{d:"08/05(三)",s:"英文週"},{d:"08/06(四)",s:"英文週"},{d:"08/07(五)",s:"假期",h:true},{d:"08/10(一)",s:"地史"},{d:"08/11(二)",s:"地史"},{d:"08/12(三)",s:"地史"},{d:"08/13(four)",s:"地史"},{d:"08/14(五)",s:"中心不開放",h:true},{d:"08/17(一)",s:"數學週"},{d:"08/18(二)",s:"數學週"},{d:"08/19(三)",s:"數學週"},{d:"08/20(四)",s:"數學週"},{d:"08/21(五)",s:"數學週"},{d:"08/24(一)",s:"科學史"},{d:"08/25(二)",s:"科學史"},{d:"08/26(三)",s:"科學史"},{d:"08/27(四)",s:"科學史"},{d:"08/28(五)",s:"科學史"}]
     }
 };
 
@@ -348,6 +340,13 @@ function getScheduleGroup(gradeText) {
     return "p1p3p6";
 }
 
+function parseDateKey(str) {
+    if (!str || str.length < 5) return 0;
+    let m = parseInt(str.substring(0, 2), 10);
+    let d = parseInt(str.substring(3, 5), 10);
+    return m * 100 + d;
+}
+
 function goToStep2() {
     const name = document.getElementById('stuName').value;
     if (!name) return alert("請輸入姓名");
@@ -366,7 +365,6 @@ function goToStep2() {
     renderUnifiedCalendar();
 }
 
-// 🌟 核心修正：取消 prompt 快訊框，改由 Cell 內部渲染下拉式選單，同時帶回當天常規學科
 function renderUnifiedCalendar() {
     const container = document.getElementById('unifiedCalendarContainer'); container.innerHTML = '';
     const grade = document.getElementById('stuGrade').value;
@@ -394,28 +392,23 @@ function renderUnifiedCalendar() {
                 d.className = 'day holiday'; 
                 d.innerHTML = `<span class="date-label">${cell.d}</span><strong class="subject-label">公眾假期</strong>`; 
             } else {
-                // 100% 帶回學科數據到外觀渲染中
                 updateUnifiedCellAppearance(d, cell.d, subA, subB);
                 
                 d.onclick = (e) => {
-                    // 點選下拉清單元件本身時，不觸發整個單元格的點選取消事件
                     if (e.target.tagName === 'SELECT') return;
 
-                    // 1. 若已勾選特選，點擊則取消
                     if (selSP[cell.d]) { 
                         delete selSP[cell.d]; 
                         updateUnifiedCellAppearance(d, cell.d, subA, subB); 
                         document.getElementById('curSP').innerText = Object.keys(selSP).length; 
                         return; 
                     }
-                    // 2. 若已選 Part A，點擊則取消
                     if (selA.has(cell.d)) { 
                         selA.delete(cell.d); 
                         updateUnifiedCellAppearance(d, cell.d, subA, subB); 
                         document.getElementById('curA').innerText = selA.size; 
                         return; 
                     }
-                    // 3. 若已選 Part B，點擊則取消
                     if (selB.has(cell.d)) { 
                         selB.delete(cell.d); 
                         updateUnifiedCellAppearance(d, cell.d, subA, subB); 
@@ -423,14 +416,13 @@ function renderUnifiedCalendar() {
                         return; 
                     }
                     
-                    // 4. 無彈窗智慧判定配額
                     let canA = limitA > 0 && selA.size < limitA && subA;
                     let canB = limitB > 0 && selB.size < limitB && subB;
                     let canSP = limitSP > 0 && Object.keys(selSP).length < limitSP;
                     
                     if (limitSP > 0) {
                         if (canSP) {
-                            selSP[cell.d] = "10:00-12:00"; // 預設時間段
+                            selSP[cell.d] = "10:00-12:00"; 
                             updateUnifiedCellAppearance(d, cell.d, subA, subB);
                         } else { alert("特選自選課堂排課配額已滿！"); }
                     } else {
@@ -451,10 +443,8 @@ function renderUnifiedCalendar() {
     });
 }
 
-// 🌟 核心優化：更新單元格外觀，完美保留常規科目，並在特選課堂直接嵌入時間下拉式清單
 function updateUnifiedCellAppearance(element, dateStr, subA, subB) {
     element.className = 'day';
-    // 從大表中動態撈出當天的常規科目名稱
     let currentSubject = subA ? subA.s : (subB ? subB.s : "常規班");
     
     if (selA.has(dateStr)) { 
@@ -467,14 +457,12 @@ function updateUnifiedCellAppearance(element, dateStr, subA, subB) {
     } 
     else if (selSP[dateStr]) { 
         element.classList.add('selected-sp'); 
-        
         let selectedTime = selSP[dateStr];
         let currentHour = selectedTime.split(":")[0];
         
-        // 帶有當天學科與下拉式選單的無彈窗組合
         let selectHtml = `<span class="date-label" style="color:#eee;">${dateStr}</span><strong class="subject-label">⭐ 特選 (${currentSubject})</strong>`;
         selectHtml += `<select class="time-dropdown" onchange="changeCellTime('${dateStr}', this.value)">`;
-        for (let h = 10; h <= 15; h++) {
+        for (let h = 10; h <= 16; h++) {
             let val = `${h}:00-${h+2}:00`;
             let selectedAttr = (String(h) === String(currentHour)) ? "selected" : "";
             selectHtml += `<option value="${val}" ${selectedAttr}>${h}:00-${h+2}:00</option>`;
@@ -511,28 +499,36 @@ function submitAndGoToStep3() {
     document.getElementById('resTotal').innerText = r.total;
     document.getElementById('resInst').innerText = document.getElementById('estInstallment').innerText;
     
+    // 🌟 修正1：整合特選、A、B 課堂並實施嚴格的日期由小到大排序
     const resGrid = document.getElementById('resUnifiedCalendar'); resGrid.innerHTML = '';
-    Object.keys(selSP).forEach(k => { resGrid.innerHTML += `<div class="day selected-sp"><span>${k}</span><strong>特選: ${selSP[k]}</strong></div>`; });
-    selA.forEach(k => { resGrid.innerHTML += `<div class="day selected-a"><span>${k}</span><strong>Part A</strong></div>`; });
-    selB.forEach(k => { resGrid.innerHTML += `<div class="day selected-b"><span>${k}</span><strong>Part B</strong></div>`; });
+    let combinedList = [];
+    Object.keys(selSP).forEach(k => { combinedList.push({ date: k, html: `<div class="day selected-sp"><span>${k}</span><strong>特選: ${selSP[k]}</strong></div>` }); });
+    selA.forEach(k => { combinedList.push({ date: k, html: `<div class="day selected-a"><span>${k}</span><strong>Part A 常規</strong></div>` }); });
+    selB.forEach(k => { combinedList.push({ date: k, html: `<div class="day selected-b"><span>${k}</span><strong>Part B 常規</strong></div>` }); });
+    
+    combinedList.sort((a, b) => parseDateKey(a.date) - parseDateKey(b.date));
+    combinedList.forEach(item => { resGrid.innerHTML += item.html; });
     
     document.getElementById('page2').style.display = 'none'; document.getElementById('page3').style.display = 'block';
 }
 
 function triggerNoticeFromForm() {
-    buildParentNoticeCalendar(document.getElementById('stuName').value, document.getElementById('stuGrade').value, document.getElementById('estTotal').innerText, document.getElementById('estInstallment').innerText, Array.from(selA), Array.from(selB), false, selSP);
+    let instStr = document.getElementById('estInstallment').innerText;
+    buildParentNoticeCalendar(document.getElementById('stuName').value, document.getElementById('stuGrade').value, document.getElementById('estTotal').innerText, instStr, Array.from(selA), Array.from(selB), false, selSP);
 }
 
 function triggerNoticeFromAdmin(index) {
     currentEditingIndex = index; cancelRescheduleMode();
     const r = cloudRecords[index]; if(!r) return alert("無法讀取此紀錄");
+    
     let rawSP = r.specialDetails || {}; 
     if (typeof rawSP === 'string') { try { rawSP = JSON.parse(rawSP); } catch(e) { rawSP = {}; } }
     
     let instStr = "";
-    if (Number(r.countA||0)===0 && Number(r.countB||0)===0) { instStr = `$${r.total} (特選全額)`; } 
+    if (Number(r.countA||0)===0 && Number(r.countB||0)===0) { instStr = `$${r.total} (特選方案需全付，不設分期)`; } 
     else { instStr = `$${Math.round(Number(r.total)/6)} x 6期`; }
     
+    // 🌟 修正2：確保行政區塊完整傳入姓名與總計等數據，杜絕讀取不到問題
     buildParentNoticeCalendar(r.name, r.gradeText, r.total, instStr, r.detailsA || [], r.detailsB || [], true, rawSP);
 }
 
@@ -563,6 +559,12 @@ function startRescheduleMode(oldDate, partType) {
 
 function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB, isAdminMode = false, objectSP = {}) {
     document.getElementById('parentNoticeModal').style.display = 'block';
+    
+    // 🌟 修正2.1：將學生姓名與學費直接綁定渲染至對應節點
+    document.getElementById('noticeStuName').innerText = name || "未指定";
+    document.getElementById('noticeTotal').innerText = total || "0";
+    document.getElementById('noticeInst').innerText = inst || "$0";
+    
     const container = document.getElementById('noticeCalendarContainer'); container.innerHTML = '';
     const group = getScheduleGroup(gradeText);
     const setA = new Set(arrA), setB = new Set(arrB);
@@ -584,7 +586,7 @@ function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB, isA
 
             if (isH) { box.style.background = "#F8EDEB"; box.innerHTML += `<span>假期</span>`; }
             else if (hasA || hasB) {
-                box.classList.add('active-class'); box.innerHTML += `<span class="notice-subject-text">📚 ${hasA?'[A]':'[B]'} ${currentSubject}</span>`;
+                box.classList.add('active-class'); box.innerHTML += `<span class="notice-subject-text">📚 ${hasA?'[Part A]':'[Part B]'} ${currentSubject}</span>`;
                 if (isAdminMode) {
                     let btn = document.createElement('button'); btn.className = 'action-mini-btn btn-change'; btn.innerText = '🔄調堂';
                     btn.onclick = (e) => { e.stopPropagation(); startRescheduleMode(cell.d, hasA?'A':'B'); }; box.appendChild(btn);
@@ -619,39 +621,87 @@ function executeClickReschedule(targetNewDate) {
 
 function showDailyModal() { document.getElementById('dailyListModal').style.display = 'block'; document.body.className = 'print-mode-daily'; generateDailyBoardHtml(); }
 
+// 🌟 修正3：大看板重構，完全拆分為三款獨立的流派日曆，並自動智慧融合符合條件的特選自選課堂
 function generateDailyBoardHtml() {
     const container = document.getElementById('dailyMonthContainer'); container.innerHTML = '';
-    let htmlContent = "";
-    Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
-        htmlContent += `<div class="month-section-title">2026年 ${m}月 總體一覽看板</div>`;
-        htmlContent += `<div class="calendar-grid">`;
-        FULL_CALENDAR_AXIS[m].forEach(cell => {
-            if (cell.type === "empty") { htmlContent += `<div class="cal-box-day empty-day"><b>-</b></div>`; return; }
-            htmlContent += `<div class="cal-box-day"><b>${cell.d}</b>`;
+    
+    // 定義三套獨立看板的規格與篩選器
+    const boardConfigs = [
+        { id: "board_A", title: "1️⃣ 暑期 Part A 大看板名單 (融合 13:00 前特選課堂)", type: "A" },
+        { id: "board_B_AM", title: "2️⃣ 暑期 Part B 上午班大看板名單 (二、五、六級 常規 + 13:00 前特選)", type: "B_AM" },
+        { id: "board_B_PM", title: "3️⃣ 暑期 Part B 下午班大看板名單 (一、三、四、中級 常規 + 13:00 及之後特選)", type: "B_PM" }
+    ];
+
+    boardConfigs.forEach(config => {
+        let typeHeader = document.createElement('div');
+        typeHeader.className = 'board-type-header';
+        typeHeader.innerText = config.title;
+        container.appendChild(typeHeader);
+
+        Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
+            let title = document.createElement('div'); title.className = 'month-section-title'; title.innerText = `2026年 ${m}月`; container.appendChild(title);
+            let grid = document.createElement('div'); grid.className = 'calendar-grid';
             
-            let tagsHtml = "";
-            cloudRecords.forEach(r => {
-                let g = r.gradeText || "";
-                let studentSP = r.specialDetails || {}; if (typeof studentSP === 'string') { try { studentSP = JSON.parse(studentSP); } catch(e){} }
+            FULL_CALENDAR_AXIS[m].forEach(cell => {
+                if (cell.type === "empty") { 
+                    let box = document.createElement('div'); box.className = 'cal-box-day empty-day'; box.innerHTML = '<b>-</b>'; 
+                    grid.appendChild(box); return; 
+                }
                 
-                if (r.detailsA && r.detailsA.includes(cell.d)) {
-                    tagsHtml += `<span class="cal-student-tag tag-a">${r.name} (Part A)</span>`;
-                }
-                if (r.detailsB && r.detailsB.includes(cell.d) && (g.includes('二')||g.includes('五')||g.includes('六'))) {
-                    tagsHtml += `<span class="cal-student-tag tag-bam">${r.name} (B-上午)</span>`;
-                }
-                if (r.detailsB && r.detailsB.includes(cell.d) && (g.includes('一')||g.includes('三')||g.includes('四')||g.includes('中'))) {
-                    tagsHtml += `<span class="cal-student-tag tag-bpm">${r.name} (B-下午)</span>`;
-                }
-                if (studentSP && studentSP[cell.d]) {
-                    tagsHtml += `<span class="cal-student-tag tag-sp">⭐ [特選] ${r.name} (${studentSP[cell.d]})</span>`;
-                }
+                let box = document.createElement('div'); box.className = 'cal-box-day'; box.innerHTML = `<b>${cell.d}</b>`;
+                let hasData = false;
+
+                cloudRecords.forEach(r => {
+                    let g = r.gradeText || "";
+                    let arrA = r.detailsA || [];
+                    let arrB = r.detailsB || [];
+                    let studentSP = r.specialDetails || {}; 
+                    if (typeof studentSP === 'string') { try { studentSP = JSON.parse(studentSP); } catch(e){} }
+                    
+                    // 看板 A 融合邏輯
+                    if (config.type === "A") {
+                        if (arrA.includes(cell.d)) {
+                            box.innerHTML += `<span class="cal-student-tag tag-a">${r.name} (${g})</span>`; hasData = true;
+                        }
+                        if (studentSP && studentSP[cell.d]) {
+                            let startHour = parseInt(studentSP[cell.d].split(":")[0], 10);
+                            if (startHour < 13) {
+                                box.innerHTML += `<span class="cal-student-tag tag-sp">⭐ [特選] ${r.name} (${studentSP[cell.d]})</span>`; hasData = true;
+                            }
+                        }
+                    }
+                    // 看板 B 上午班融合邏輯 (二、五、六級常規 + 上午特選)
+                    else if (config.type === "B_AM") {
+                        if (arrB.includes(cell.d) && (g.includes('二') || g.includes('五') || g.includes('六'))) {
+                            box.innerHTML += `<span class="cal-student-tag tag-bam">${r.name} (${g})</span>`; hasData = true;
+                        }
+                        if (studentSP && studentSP[cell.d]) {
+                            let startHour = parseInt(studentSP[cell.d].split(":")[0], 10);
+                            if (startHour < 13) {
+                                box.innerHTML += `<span class="cal-student-tag tag-sp">⭐ [特選] ${r.name} (${studentSP[cell.d]})</span>`; hasData = true;
+                            }
+                        }
+                    }
+                    // 看板 B 下午班融合邏輯 (一、三、四、中級常規 + 下午特選)
+                    else if (config.type === "B_PM") {
+                        if (arrB.includes(cell.d) && (g.includes('一') || g.includes('三') || g.includes('四') || g.includes('中'))) {
+                            box.innerHTML += `<span class="cal-student-tag tag-bpm">${r.name} (${g})</span>`; hasData = true;
+                        }
+                        if (studentSP && studentSP[cell.d]) {
+                            let startHour = parseInt(studentSP[cell.d].split(":")[0], 10);
+                            if (startHour >= 13) {
+                                box.innerHTML += `<span class="cal-student-tag tag-sp">⭐ [特選] ${r.name} (${studentSP[cell.d]})</span>`; hasData = true;
+                            }
+                        }
+                    }
+                });
+
+                if (!hasData) { box.innerHTML += `<span style="color:#ccc;">-</span>`; }
+                grid.appendChild(box);
             });
-            htmlContent += tagsHtml || `<span style="color:#ccc;">-</span>`; htmlContent += `</div>`;
+            container.appendChild(grid);
         });
-        htmlContent += `</div>`;
     });
-    container.innerHTML = htmlContent;
 }
 
 function refreshFromSheets() {
