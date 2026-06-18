@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
+<!DOCTYPE html><html lang="zh-Hant"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>2026年 多元智能暑期課程報名系統</title>
@@ -32,6 +30,7 @@
         .result-box { background: #F0F4F0; padding: 20px; border-radius: 12px; border-left: 10px solid #8FA998; }
         .btn { background: var(--accent-blue); color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: bold; width: 100%; margin-top: 15px; }
         .btn-admin-entrance { background: #795548; color: white; padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.75em; font-weight: bold; margin-left: 10px; }
+        .btn-delete-rec { background: #d9534f; color: white; padding: 4px 8px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 11px; }
         
         input, select { padding: 12px; width: 100%; margin-top: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1em; }
         
@@ -70,32 +69,23 @@
         .tab-btn { flex: 1; padding: 10px; border: none; font-weight: bold; border-radius: 5px; cursor: pointer; background: #DDD; color: #555; }
         .tab-btn.active { background: #4A6D8C; color: white; }
 
-        /* 🖨 核心修復：列印專用排版權限 CSS 區塊 */
         @media print {
             @page { margin: 0.5cm; size: A4; }
             body { background: white !important; }
             .container, .no-print, .btn, .btn-admin-entrance, .reschedule-btn-group, .view-tab-container { display: none !important; }
-            
-            /* 家長通知書列印 */
             body.print-mode-notice #parentNoticeModal { display: block !important; position: static !important; background: white !important; width: 100% !important; height: auto !important; overflow: visible !important; }
             body.print-mode-notice #parentNoticeModal .modal-content { width: 100% !important; height: auto !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; }
-            
-            /* 導師點名冊列印 */
             body.print-mode-daily #dailyListModal { display: block !important; position: static !important; background: white !important; width: 100% !important; height: auto !important; overflow: visible !important; }
             body.print-mode-daily #dailyListModal .modal-content { width: 100% !important; height: auto !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; overflow: visible !important; }
-            
-            /* 🌟 修正核心：後台總統計與報名總表列印 */
             body.print-mode-admin .container { display: block !important; box-shadow: none !important; padding: 0 !important; background: white !important; }
             body.print-mode-admin #adminPanel { display: block !important; visibility: visible !important; position: static !important; margin-top: 10px !important; opacity: 1 !important; }
             body.print-mode-admin .page, body.print-mode-admin .header { display: none !important; }
-            
             .calendar-grid { grid-template-columns: repeat(5, 1fr) !important; gap: 8px !important; }
             .stat-badge { border: 1px solid #ccc !important; color: #333 !important; background: #f9f9f9 !important; }
         }
     </style>
 </head>
 <body>
-
 <div class="container">
     <div class="header no-print">
         <div class="logo-area">
@@ -178,7 +168,19 @@
             <button class="btn" style="background: #2e7d32; width: auto;" onclick="refreshFromSheets()">🔄 手動同步雲端</button>
         </div>
         <table class="admin-table" id="recordTable">
-            <thead><tr><th>姓名 (點擊辦理調堂)</th><th>年級</th><th>性別</th><th>總額</th><th>A日數</th><th>B日數</th><th>Part C</th><th>登記時間</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>姓名 (點擊辦理調堂)</th>
+                    <th>年級</th>
+                    <th>性別</th>
+                    <th>總額</th>
+                    <th>A日數</th>
+                    <th>B日數</th>
+                    <th>Part C</th>
+                    <th>登記時間</th>
+                    <th class="no-print" style="color:#d9534f;">行政控制</th>
+                </tr>
+            </thead>
             <tbody></tbody>
         </table>
     </div>
@@ -192,7 +194,7 @@
         </div>
         
         <div id="rescheduleNoticeBar" class="no-print" style="background:#FFF3CD; padding:12px; border-radius:8px; font-size:14px; border-left:5px solid #e67e22; color:#d35400; margin-bottom:15px; font-weight:bold;">
-            💡 <b>滑鼠點擊直覺調堂：</b>點擊課堂格子右下角的 <b>🔄調堂</b> 按鈕，月曆上的可選空日子會變成黃色，接著直接點擊任何一個黃色格子，即可秒速完成換堂！
+            💡 <b>滑鼠點擊直覺調堂：</b>點擊課堂格子右下角的 <b>🔄調堂</b> 按鈕，月曆上的可選空日子會變黃色，接著直接點擊任何一個黃色格子，即可秒速完成換堂！
         </div>
 
         <p>親愛的家長：您的孩子 <strong id="noticeStuName" style="color:#0288D1; font-size:1.15em;"></strong> 專屬的時間表如下：</p>
@@ -215,7 +217,7 @@
         <div style="display:flex; justify-content: space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:10px; margin-bottom:5px;">
             <h3 style="margin:0;">📅 導師專用：暑期每日上課學生名單看板</h3>
             <div class="no-print">
-                <button class="btn" style="background:#0288D1; width:auto; margin:0;" onclick="window.print()">🖨 列印月曆名單</button>
+                <button class="btn" style="background:#0288D1; width:auto; margin:0;" onclick="window.print()">🖨 列印此名單</button>
                 <button class="btn" style="background:#795548; width:auto; margin:0;" onclick="document.getElementById('dailyListModal').style.display='none'; document.body.className='';">關閉</button>
             </div>
         </div>
@@ -238,13 +240,13 @@ let selB = new Set();
 let cloudRecords = [];
 let currentEditingIndex = null; 
 let currentDailyViewTab = 'AllA'; 
-
 let rescheduleActiveState = { isMode: false, oldDate: null, partType: null };
 
 const PRICING = {
     "升中一或以上": { A: {12:2760, 16:3540, 19:4310}, B: {20:10080, 24:11760, 29:13440}, C_WithB: {20:3120, 24:3000, 29:2940}, C_Single: 3980 },
     "升小": { A: {12:2520, 16:3240, 18:3780}, B: {20:8880, 24:10320, 29:12150}, C_WithB: {20:3060, 24:2790, 29:2640}, C_Single: 3250 }
 };
+
 const GRADE_ORDER = { "升小一":1, "升小二":2, "升小三":3, "升小四":4, "升小五":5, "升小六":6, "升中一或以上":7 };
 
 const FULL_CALENDAR_AXIS = {
@@ -259,28 +261,28 @@ const FULL_CALENDAR_AXIS = {
         {type:"data", d:"07/06(一)"}, {type:"data", d:"07/07(二)"}, {type:"data", d:"07/08(三)"}, {type:"data", d:"07/09(四)"}, {type:"data", d:"07/10(五)"},
         {type:"data", d:"07/13(一)"}, {type:"data", d:"07/14(二)"}, {type:"data", d:"07/15(三)"}, {type:"data", d:"07/16(四)"}, {type:"data", d:"07/17(五)"},
         {type:"data", d:"07/20(一)"}, {type:"data", d:"07/21(二)"}, {type:"data", d:"07/22(三)"}, {type:"data", d:"07/23(四)"}, {type:"data", d:"07/24(五)"},
-        {type:"data", d:"07/27(一)"}, {type:"data", d:"07/28(二)"}, {type:"data", d:"07/29(三)"}, {type:"data", d:"07/30(四)"}, {type:"data", d:"07/31(五)"}
+        {type:"data", d:"07/27(一)"}, {type:"data", d:"07/28(二)"}, {type:"data", d:"07/29(三)"}, {type:"data", d:"07/30(four)"}, {type:"data", d:"07/31(五)"}
     ],
     "08": [
         {type:"data", d:"08/03(一)"}, {type:"data", d:"08/04(二)"}, {type:"data", d:"08/05(三)"}, {type:"data", d:"08/06(四)"}, {type:"data", d:"08/07(五)"},
         {type:"data", d:"08/10(一)"}, {type:"data", d:"08/11(二)"}, {type:"data", d:"08/12(三)"}, {type:"data", d:"08/13(四)"}, {type:"data", d:"08/14(五)"},
-        {type:"data", d:"08/17(一)"}, {type:"data", d:"08/18(二)"}, {type:"data", d:"08/19(三)"}, {type:"data", d:"08/20(四)"}, {type:"data", d:"08/21(五)"},
+        {type:"data", d:"08/17(一)"}, {type:"data", d:"08/18(二)"}, {type:"data", d:"08/19(三)"}, {type:"data", d:"08/20(four)"}, {type:"data", d:"08/21(五)"},
         {type:"data", d:"08/24(一)"}, {type:"data", d:"08/25(二)"}, {type:"data", d:"08/26(三)"}, {type:"data", d:"08/27(四)"}, {type:"data", d:"08/28(五)"}
     ]
 };
 
 const SCHEDULE_MASTER = {
     p1p3p6: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(four)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(四)",s:"英文"},{d:"07/24(五)",s:"英文"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文作"},{d:"07/29(三)",s:"英文作"},{d:"07/30(四)",s:"英文作"},{d:"07/31(五)",s:"英文作"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"中文作"},{d:"08/06(四)",s:"中文作"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"中文"},{d:"08/14(五)",s:"中文"},{d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"數學"},{d:"08/21(五)",s:"數學"},{d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(四)",s:"常識"},{d:"08/28(五)",s:"常識"}]
+        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(four)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(one)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        B: [{d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(four)",s:"英文"},{d:"07/24(五)",s:"英文"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文作"},{d:"07/29(三)",s:"英文作"},{d:"07/30(四)",s:"英文作"},{d:"07/31(五)",s:"英文作"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"中文作"},{d:"08/06(四)",s:"中文作"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"中文"},{d:"08/14(五)",s:"中文"},{d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(four)",s:"數學"},{d:"08/21(五)",s:"數學"},{d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(四)",s:"常識"},{d:"08/28(五)",s:"常識"}]
     },
     p4p5: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中文"},{d:"07/24(五)",s:"模考"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英文"},{d:"07/31(五)",s:"模考"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"英文作"},{d:"08/06(四)",s:"英文作"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數學"},{d:"08/14(五)",s:"模考"},{d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人文"},{d:"08/21(五)",s:"模考"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"模考"}]
+        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(four)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(four)",s:"中文"},{d:"07/24(五)",s:"模考"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(four)",s:"英文"},{d:"07/31(五)",s:"模考"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"英文作"},{d:"08/06(four)",s:"英文作"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(four)",s:"數學"},{d:"08/14(五)",s:"模考"},{d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(four)",s:"人文"},{d:"08/21(五)",s:"模考"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"模考"}]
     },
     secondary: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"數學"},{d:"06/25(四)",s:"數學"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"科學"},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(four)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言文"},{d:"07/14(二)",s:"文言文"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"數學"},{d:"07/21(二)",s:"中文週"},{d:"07/22(三)",s:"中文週"},{d:"07/23(四)",s:"中文週"},{d:"07/24(五)",s:"中文週"},{d:"07/27(一)",s:"中文週"},{d:"07/28(二)",s:"中文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},{d:"08/03(一)",s:"英文週"},{d:"08/04(二)",s:"英文週"},{d:"08/05(三)",s:"英文週"},{d:"08/06(四)",s:"英文週"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"地史"},{d:"08/11(二)",s:"地史"},{d:"08/12(三)",s:"地史"},{d:"08/13(四)",s:"地史"},{d:"08/14(五)",s:"中心不開放",h:true},{d:"08/17(一)",s:"數學週"},{d:"08/18(二)",s:"數學週"},{d:"08/19(三)",s:"數學週"},{d:"08/20(四)",s:"數學週"},{d:"08/21(五)",s:"數學週"},{d:"08/24(一)",s:"科學史"},{d:"08/25(二)",s:"科學史"},{d:"08/26(三)",s:"科學史"},{d:"08/27(four)",s:"科學史"},{d:"08/28(五)",s:"科學史"}]
+        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"數學"},{d:"06/25(four)",s:"數學"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"科學"},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(four)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言文"},{d:"07/14(二)",s:"文言文"},{d:"07/15(三)",s:"英文作"},{d:"07/16(four)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        B: [{d:"07/20(一)",s:"數學"},{d:"07/21(二)",s:"中文週"},{d:"07/22(三)",s:"中文週"},{d:"07/23(four)",s:"中文週"},{d:"07/24(五)",s:"中文週"},{d:"07/27(一)",s:"中文週"},{d:"07/28(二)",s:"中文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(four)",s:"英文週"},{d:"07/31(五)",s:"英文週"},{d:"08/03(一)",s:"英文週"},{d:"08/04(二)",s:"英文週"},{d:"08/05(三)",s:"英文週"},{d:"08/06(four)",s:"英文週"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"地史"},{d:"08/11(二)",s:"地史"},{d:"08/12(三)",s:"地史"},{d:"08/13(four)",s:"地史"},{d:"08/14(五)",s:"中心不開放",h:true},{d:"08/17(一)",s:"數學週"},{d:"08/18(二)",s:"數學週"},{d:"08/19(三)",s:"數學週"},{d:"08/20(four)",s:"數學週"},{d:"08/21(五)",s:"數學週"},{d:"08/24(一)",s:"科學史"},{d:"08/25(二)",s:"科學史"},{d:"08/26(三)",s:"科學史"},{d:"08/27(four)",s:"科學史"},{d:"08/28(五)",s:"科學史"}]
     }
 };
 
@@ -303,7 +305,7 @@ function updateEstimates() {
         
         document.getElementById('estTotal').innerText = fA + fB + fC;
         document.getElementById('estInstallment').innerText = Math.round((fA + fB + fC) / 6);
-        document.getElementById('estDetail').innerText = `A: $${fA} | B: $${fB} | C: $${fC}`;
+        document.getElementById('estDetail').innerText = "A: $" + fA + " | B: $" + fB + " | C: $" + fC;
     } catch(err) { console.log("計費防護中"); }
 }
 
@@ -320,7 +322,7 @@ function goToStep2() {
     
     document.getElementById('page1').style.display = 'none';
     document.getElementById('page2').style.display = 'block';
-    document.getElementById('studentInfoBar').innerText = `學生：${name} (${grade})`;
+    document.getElementById('studentInfoBar').innerText = "學生：" + name + " (" + grade + ")";
     
     const targetGroup = getScheduleGroup(grade);
     selA.clear(); selB.clear();
@@ -333,7 +335,8 @@ function goToStep2() {
     renderCal('calB', SCHEDULE_MASTER[targetGroup].B, selB, 'planB', 'curB');
 }
 
-function renderCal(id, data, set, pId, curId, readonly = false) {
+function renderCal(id, data, set, pId, curId, readonly) {
+    readonly = !!readonly;
     const container = document.getElementById(id);
     const limit = Number(document.getElementById(pId).value);
     container.innerHTML = '';
@@ -345,7 +348,7 @@ function renderCal(id, data, set, pId, curId, readonly = false) {
         const d = document.createElement('div');
         d.className = 'day' + (item.ox ? ' oxford' : '') + (item.h ? ' holiday' : '');
         if (set.has(item.d)) d.classList.add('selected');
-        d.innerHTML = `<span>${item.d}</span><strong>${item.s}</strong>`;
+        d.innerHTML = "<span>" + item.d + "</span><strong>" + item.s + "</strong>";
         if (!readonly && !item.h) {
             d.onclick = () => {
                 if (set.has(item.d)) { set.delete(item.d); d.classList.remove('selected'); }
@@ -391,7 +394,7 @@ function cancelRescheduleMode() {
     const bar = document.getElementById('rescheduleNoticeBar');
     if (bar) {
         bar.style.background = "#FFF3CD"; bar.style.borderColor = "#e67e22"; bar.style.color = "#d35400";
-        bar.innerHTML = `💡 <b>滑鼠點擊直覺調堂：</b>點擊課堂格子右下角的 <b>🔄調堂</b> 按鈕，月曆上的可選空日子會變成黃色，接著直接點擊任何一個黃色格子，即可秒速完成換堂！`;
+        bar.innerHTML = "💡 <b>滑鼠點擊直覺調堂：</b>點擊課堂格子右下角的 <b>🔄調堂</b> 按鈕，月曆上的可選空日子會變黃色，接著直接點擊任何一個黃色格子，即可秒速完成換堂！";
     }
 }
 
@@ -399,7 +402,7 @@ function startRescheduleMode(oldDate, partType) {
     rescheduleActiveState = { isMode: true, oldDate: oldDate, partType: partType };
     const bar = document.getElementById('rescheduleNoticeBar');
     bar.style.background = "#D4EDDA"; bar.style.borderColor = "#28A745"; bar.style.color = "#155724";
-    bar.innerHTML = `🚀 <b>已鎖定欲調堂日子：[Part ${partType}] ${oldDate}</b> -> <u>請現在直接用滑鼠點擊下方任何一個<b>黃色虛線格子</b>完成調堂</u>。 <button onclick="cancelRescheduleMode(); triggerNoticeFromAdmin(currentEditingIndex);" style="background:#dc3545; color:white; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; font-weight:bold; margin-left:10px;">取消調堂</button>`;
+    bar.innerHTML = "🚀 <b>已鎖定欲調堂日子：[Part " + partType + "] " + oldDate + "</b> -> <u>請現在直接用滑鼠點擊下方任何一個<b>黃色虛線格子</b>完成調堂</u>。 <button onclick=\"cancelRescheduleMode(); triggerNoticeFromAdmin(currentEditingIndex);\" style=\"background:#dc3545; color:white; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; font-weight:bold; margin-left:10px;\">取消調堂</button>";
 
     const r = cloudRecords[currentEditingIndex];
     const group = getScheduleGroup(r.gradeText);
@@ -419,7 +422,8 @@ function startRescheduleMode(oldDate, partType) {
     });
 }
 
-function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB, isAdminMode = false) {
+function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB, isAdminMode) {
+    isAdminMode = !!isAdminMode;
     document.getElementById('parentNoticeModal').style.display = 'block';
     document.body.className = 'print-mode-notice';
     
@@ -432,7 +436,7 @@ function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB, isA
     const setA = new Set(arrA), setB = new Set(arrB);
 
     Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
-        let title = document.createElement('div'); title.className = 'month-section-title'; title.innerText = `2026年 ${m}月`; container.appendChild(title);
+        let title = document.createElement('div'); title.className = 'month-section-title'; title.innerText = "2026年 " + m + "月"; container.appendChild(title);
         let weeksHeader = document.createElement('div'); weeksHeader.className = 'calendar-weeks-header';
         weeksHeader.innerHTML = '<div>星期一 (Mon)</div><div>星期二 (Tue)</div><div>星期三 (Wed)</div><div>星期四 (Thu)</div><div>星期五 (Fri)</div>';
         container.appendChild(weeksHeader);
@@ -451,12 +455,12 @@ function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB, isA
                 
                 if (isHoliday) {
                     box.style.background = "#F8EDEB"; box.style.opacity = "0.5";
-                    box.innerHTML += `<span style="color:#E5989B;font-size:11px;">${subA ? subA.s : "假期"}</span>`;
+                    box.innerHTML += "<span style=\"color:#E5989B;font-size:11px;\">" + (subA ? subA.s : "假期") + "</span>";
                 } else if (hasA || hasB) {
                     box.classList.add('active-class');
                     let partName = hasA ? "[A]" : "[B]";
                     let subSubject = hasA ? (subA?subA.s:"A課") : (subB?subB.s:"B課");
-                    box.innerHTML += `<span class="notice-subject-text">📚 ${partName}${subSubject}</span>`;
+                    box.innerHTML += "<span class=\"notice-subject-text\">📚 " + partName + subSubject + "</span>";
                     
                     if (isAdminMode && currentEditingIndex !== null) {
                         let btnGroup = document.createElement('div'); btnGroup.className = 'reschedule-btn-group no-print';
@@ -465,7 +469,7 @@ function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB, isA
                         btnGroup.appendChild(cBtn); box.appendChild(btnGroup);
                     }
                 } else {
-                    box.innerHTML += `<span style="color:#bbb;font-size:11px;">無堂</span>`;
+                    box.innerHTML += "<span style=\"color:#bbb;font-size:11px;\">無堂</span>";
                 }
                 box.onclick = () => {
                     if (box.classList.contains('reschedule-targetable') && rescheduleActiveState.isMode) executeClickReschedule(cell.d);
@@ -494,7 +498,7 @@ function executeClickReschedule(targetNewDate) {
         if (!r.detailsB.includes(targetNewDate)) r.detailsB.push(targetNewDate);
         r.countB = r.detailsB.length;
     }
-    alert(`🎉 調堂成功！\n已將 [Part ${partType}] 從 ${oldDate} 更換至 ${targetNewDate}。`);
+    alert("🎉 調堂成功！\n已將 [Part " + partType + "] 從 " + oldDate + " 更換至 " + targetNewDate + "。");
     cancelRescheduleMode(); triggerNoticeFromAdmin(currentEditingIndex); renderAdminTable(cloudRecords);
 }
 
@@ -518,20 +522,20 @@ function generateDailyBoardHtml() {
     
     let htmlContent = "";
     Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
-        let titleText = `2026年 ${m}月 - `;
+        let titleText = "2026年 " + m + "月 - ";
         if (currentDailyViewTab === 'AllA') titleText += "☀️ 全體 Part A 課程名單";
         if (currentDailyViewTab === 'BAM') titleText += "☀️ Part B 上午班名單 (P2, P5, P6) 【10:00-13:00】";
         if (currentDailyViewTab === 'BPM') titleText += "🌙 Part B 下午班名單 (P1, P3, P4, 中學) 【13:30-16:30】";
 
-        htmlContent += `<div class="month-section-title">${titleText}</div>`;
-        htmlContent += `<div class="calendar-weeks-header"><div>星期一</div><div>星期二</div><div>星期三</div><div>星期四</div><div>星期五</div></div>`;
-        htmlContent += `<div class="calendar-grid">`;
+        htmlContent += "<div class=\"month-section-title\">" + titleText + "</div>";
+        htmlContent += "<div class=\"calendar-weeks-header\"><div>星期一</div><div>星期二</div><div>星期三</div><div>星期四</div><div>星期五</div></div>";
+        htmlContent += "<div class=\"calendar-grid\">";
 
         FULL_CALENDAR_AXIS[m].forEach(cell => {
             if (cell.type === "empty") {
-                htmlContent += `<div class="cal-box-day empty-day"><b>-</b></div>`;
+                htmlContent += "<div class=\"cal-box-day empty-day\"><b>-</b></div>";
             } else {
-                htmlContent += `<div class="cal-box-day"><b>${cell.d}</b>`;
+                htmlContent += "<div class=\"cal-box-day\"><b>" + cell.d + "</b>";
                 let todayCount = 0; let studentListHtml = "";
                 
                 cloudRecords.forEach(r => {
@@ -543,36 +547,36 @@ function generateDailyBoardHtml() {
                         todayCount++;
                         let grp = getScheduleGroup(g);
                         let subA = SCHEDULE_MASTER[grp].A.find(x => x.d === cell.d);
-                        studentListHtml += `<span class="cal-student-tag" style="background:#E3F2FD; color:#0D47A1;">${r.name} <span>(${g.replace('升','')}/${subA?subA.s:'A'})</span></span>`;
+                        studentListHtml += "<span class=\"cal-student-tag\" style=\"background:#E3F2FD; color:#0D47A1;\">" + r.name + " <span>(" + g.replace('升','') + "/" + (subA?subA.s:'A') + ")</span></span>";
                     } 
                     else if (currentDailyViewTab === 'BAM' && isRegisteredPM && (g.includes('二') || g.includes('五') || g.includes('六'))) {
                         todayCount++;
                         let grp = getScheduleGroup(g);
                         let subB = SCHEDULE_MASTER[grp].B.find(x => x.d === cell.d);
-                        studentListHtml += `<span class="cal-student-tag" style="background:#E8F5E9; color:#1B5E20; border-left-color:#4CAF50;">${r.name} <span>(P${g.charAt(g.length-1)}/${subB?subB.s:'B'})</span></span>`;
+                        studentListHtml += "<span class=\"cal-student-tag\" style=\"background:#E8F5E9; color:#1B5E20; border-left-color:#4CAF50;\">" + r.name + " <span>(P" + g.charAt(g.length-1) + "/" + (subB?subB.s:'B') + ")</span></span>";
                     } 
                     else if (currentDailyViewTab === 'BPM' && isRegisteredPM && (g.includes('一') || g.includes('三') || g.includes('四') || g.includes('中'))) {
                         todayCount++;
                         let grp = getScheduleGroup(g);
                         let subB = SCHEDULE_MASTER[grp].B.find(x => x.d === cell.d);
-                        let labelName = g.includes('中') ? '中學' : `P${g.charAt(g.length-1)}`;
-                        let htmlTagColor = g.includes('中') ? 'background:#F3E5F5; color:#4A148C; border-left-color:#9C27B0;' : 'background:#FFF3E0; color:#E65100; border-left-color:#FF9800;';
-                        studentListHtml += `<span class="cal-student-tag" style="${htmlTagColor}">${r.name} <span>(${labelName}/${subB?subB.s:'B'})</span></span>`;
+                        let labelName = g.includes('中') ? '中學' : "P" + g.charAt(g.length-1);
+                        let htmlTagColor = g.includes('慢') || g.includes('中') ? 'background:#F3E5F5; color:#4A148C; border-left-color:#9C27B0;' : 'background:#FFF3E0; color:#E65100; border-left-color:#FF9800;';
+                        studentListHtml += "<span class=\"cal-student-tag\" style=\"" + htmlTagColor + "\">" + r.name + " <span>(" + labelName + "/" + (subB?subB.s:'B') + ")</span></span>";
                     }
                 });
 
                 let isH = (SCHEDULE_MASTER.p1p3p6.A.find(x=>x.d===cell.d) && SCHEDULE_MASTER.p1p3p6.A.find(x=>x.d===cell.d).h) || (SCHEDULE_MASTER.p1p3p6.B.find(x=>x.d===cell.d) && SCHEDULE_MASTER.p1p3p6.B.find(x=>x.d===cell.d).h);
                 if (isH) {
-                    htmlContent += `<span style="color:#E5989B;font-weight:bold;font-size:12px;margin-top:10px;text-align:center;">紅日假期</span>`;
+                    htmlContent += "<span style=\"color:#E5989B;font-weight:bold;font-size:12px;margin-top:10px;text-align:center;\">紅日假期</span>";
                 } else if (todayCount > 0) {
-                    htmlContent += `<span style="color:#0288D1;font-weight:bold;margin-bottom:5px;display:block;">應到人數: ${todayCount}人</span>` + studentListHtml;
+                    htmlContent += "<span style=\"color:#0288D1;font-weight:bold;margin-bottom:5px;display:block;\">應到人數: " + todayCount + "人</span>" + studentListHtml;
                 } else {
-                    htmlContent += `<span style="color:#ccc;font-size:11px;">(無學生)</span>`;
+                    htmlContent += "<span style=\"color:#ccc;font-size:11px;\">(無學生)</span>";
                 }
-                htmlContent += `</div>`;
+                htmlContent += "</div>";
             }
         });
-        htmlContent += `</div>`;
+        htmlContent += "</div>";
     });
     container.innerHTML = htmlContent;
 }
@@ -608,13 +612,56 @@ function renderStats(records) {
     `;
 }
 
+// 🌟 核心修復：在前端渲染表格時，加入「❌ 刪除」按鈕
 function renderAdminTable(records) {
     records.sort((a, b) => (GRADE_ORDER[a.gradeText] || 99) - (GRADE_ORDER[b.gradeText] || 99));
     const tbody = document.querySelector('#recordTable tbody'); tbody.innerHTML = '';
     records.forEach((r, index) => { 
         let hasC = (r.hasPartC===true || r.hasPartC==="true" || r.hasPartC==="V") ? 'V' : '×';
-        tbody.innerHTML += `<tr><td class="clickable-name" onclick="triggerNoticeFromAdmin(${index})">${r.name}</td><td>${r.gradeText}</td><td>${r.gender}</td><td>$${r.total}</td><td>${r.countA}</td><td>${r.countB}</td><td>${hasC}</td><td>${r.timestamp}</td></tr>`; 
+        tbody.innerHTML += "<tr>" +
+            "<td class=\"clickable-name\" onclick=\"triggerNoticeFromAdmin(" + index + ")\">" + r.name + "</td>" +
+            "<td>" + r.gradeText + "</td>" +
+            "<td>" + r.gender + "</td>" +
+            "<td>$" + r.total + "</td>" +
+            "<td>" + r.countA + "</td>" +
+            "<td>" + r.countB + "</td>" +
+            "<td>" + hasC + "</td>" +
+            "<td>" + r.timestamp + "</td>" +
+            "<td class=\"no-print\"><button class=\"btn-delete-rec\" onclick=\"deleteEntireRecord(" + index + ")\">❌ 刪除</button></td>" +
+            "</tr>"; 
     });
+}
+
+// 🌟 新增：前端呼叫後端執行徹底刪除的函數
+function deleteEntireRecord(index) {
+    const r = cloudRecords[index];
+    if (!r) return;
+    
+    if (confirm("⚠️ 警告：確定要從雲端試算表中，徹底刪除學生【" + r.name + "】的所有登記紀錄嗎？此操作不可恢復！")) {
+        document.getElementById('syncStatus').style.display = 'block';
+        
+        const deletePayload = {
+            action: "delete_record",
+            timestamp: r.timestamp,
+            name: r.name
+        };
+        
+        fetch(scriptURL, {
+            method: 'POST',
+            mode: 'no-cors',
+            body: JSON.stringify(deletePayload)
+        }).then(() => {
+            alert("🎉 已成功向雲端發送刪除學生【" + r.name + "】的命令！");
+            // 本地陣列同步移除，不用等重新整理
+            cloudRecords.splice(index, 1);
+            renderAdminTable(cloudRecords);
+            renderStats(cloudRecords);
+            document.getElementById('syncStatus').style.display = 'none';
+        }).catch((err) => {
+            alert("網絡同步失敗，請稍後再試。");
+            document.getElementById('syncStatus').style.display = 'none';
+        });
+    }
 }
 
 function toggleAdmin() { 
@@ -622,6 +669,7 @@ function toggleAdmin() {
         document.getElementById('adminPanel').style.display = 'block'; refreshFromSheets(); 
     } 
 }
+
 function triggerAdminPrint() { document.body.className = 'print-mode-admin'; window.print(); }
 
 updateEstimates();
