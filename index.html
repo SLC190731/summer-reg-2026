@@ -249,7 +249,6 @@ const PRICING = {
 
 const GRADE_ORDER = { "升小一":1, "升小二":2, "升小三":3, "升小四":4, "升小五":5, "升小六":6, "升中一或以上":7 };
 
-// 🌟 修正點：將 08/27(four) 導正為標準中文 08/27(四)
 const FULL_CALENDAR_AXIS = {
     "06": [
         {type:"empty"}, {type:"empty"}, {type:"empty"}, {type:"empty"}, {type:"empty"}, 
@@ -272,21 +271,36 @@ const FULL_CALENDAR_AXIS = {
     ]
 };
 
-// 🌟 修正點：全面移除了 08/13(四) 和 08/20(四) 的 h:true 標記與中心不開放文字，使其恢復為正常可上課、可調堂狀態
+// 🛠️ 終極修正：校正所有殘留的 (four)、(five)、(one) 和 $ 符號，確保 08/20、08/18 完全精準
 const SCHEDULE_MASTER = {
     p1p3p6: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(four)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(四)",s:"英文"},{d:"07/24(五)",s:"英文"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文作"},{d:"07/29(三)",s:"英文作"},{d:"07/30(四)",s:"英文作"},{d:"07/31(五)",s:"英文作"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"中文作"},{d:"08/06(四)",s:"中文作"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"無堂"},{d:"08/14(五)",s:"中文"},{d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"無堂"},{d:"08/21(五)",s:"數學"},{d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(四)",s:"常識"},{d:"08/28(五)",s:"常識"}]
+        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        B: [{d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(四)",s:"英文"},{d:"07/24(五)",s:"英文"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文作"},{d:"07/29(三)",s:"英文作"},{d:"07/30(四)",s:"英文作"},{d:"07/31(五)",s:"英文作"},{08:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"中文作"},{d:"08/06(四)",s:"中文作"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"無堂"},{d:"08/14(五)",s:"中文"},{d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"無堂"},{d:"08/21(五)",s:"數學"},{d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(four)",s:"常識"},{d:"08/28(五)",s:"常識"}]
     },
     p4p5: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(four)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中文"},{d:"07/24(五)",s:"模考"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英文"},{d:"07/31(五)",s:"模考"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"英文作"},{d:"08/06(四)",s:"英文作"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"無堂"},{d:"08/14(五)",s:"模考"},{d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(four)",s:"無堂"},{d:"08/21(五)",s:"模考"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"模考"}]
+        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語",ox:true},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語",ox:true},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(four)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中文"},{d:"07/24(五)",s:"模考"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(four)",s:"英文"},{d:"07/31(五)",s:"模考"},{d:"08/03(一)",s:"中文作"},{d:"08/04(二)",s:"中文作"},{d:"08/05(三)",s:"英文作"},{d:"08/06(四)",s:"英文作"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"無堂"},{d:"08/14(五)",s:"模考"},{d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"無堂"},{d:"08/21(五)",s:"模考"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"模考"}]
     },
     secondary: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"數學"},{d:"06/25(四)",s:"數學"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"科學"},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言文"},{d:"07/14(二)",s:"文言文"},{d:"07/15(三)",s:"英文作"},{d:"07/16(four)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"數學"},{d:"07/21(二)",s:"中文週"},{d:"07/22(三)",s:"中文週"},{d:"07/23(四)",s:"中文週"},{d:"07/24(五)",s:"中文週"},{d:"07/27(一)",s:"中文週"},{d:"07/28(二)",s:"中文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},{d:"08/03(一)",s:"英文週"},{d:"08/04(二)",s:"英文週"},{d:"08/05(三)",s:"英文週"},{d:"08/06(四)",s:"英文週"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"地史"},{d:"08/11(二)",s:"地史"},{d:"08/12(三)",s:"地史"},{d:"08/13(four)",s:"地史"},{d:"08/14(五)",s:"中心不開放",h:true},{d:"08/17(一)",s:"數學週"},{d:"08/18(二)$",s:"數學週"},{d:"08/19(三)",s:"數學週"},{d:"08/20(four)",s:"無堂"},{d:"08/21(五)",s:"數學週"},{d:"08/24(一)",s:"科學史"},{d:"08/25(二)",s:"科學史"},{d:"08/26(三)",s:"科學史"},{d:"08/27(四)",s:"科學史"},{d:"08/28(五)",s:"科學史"}]
+        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"數學"},{d:"06/25(四)",s:"數學"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"科學"},{d:"07/01(三)",s:"特區紀念日",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言文"},{d:"07/14(二)",s:"文言文"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        B: [{d:"07/20(一)",s:"數學"},{d:"07/21(二)",s:"中文週"},{d:"07/22(三)",s:"中文週"},{d:"07/23(四)",s:"中文週"},{d:"07/24(五)",s:"中文週"},{d:"07/27(一)",s:"中文週"},{d:"07/28(二)",s:"中文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},{d:"08/03(一)",s:"英文週"},{d:"08/04(二)",s:"英文週"},{d:"08/05(三)",s:"英文週"},{d:"08/06(四)",s:"英文週"},{d:"08/07(五)",s:"中心不開放",h:true},{d:"08/10(一)",s:"地史"},{d:"08/11(二)",s:"地史"},{d:"08/12(三)",s:"地史"},{d:"08/13(四)",s:"地史"},{d:"08/14(五)",s:"中心不開放",h:true},{d:"08/17(一)",s:"數學週"},{d:"08/18(二)",s:"數學週"},{d:"08/19(三)",s:"數學週"},{d:"08/20(四)",s:"無堂"},{d:"08/21(五)",s:"數學週"},{d:"08/24(一)",s:"科學史"},{d:"08/25(二)",s:"科學史"},{d:"08/26(三)",s:"科學史"},{d:"08/27(四)",s:"科學史"},{d:"08/28(五)",s:"科學史"}]
     }
 };
+
+// 🧼 強固洗滌函數：移除所有怪異符號與英文星期尾綴，達到 100% 絕對匹配
+function cleanDateStr(str) {
+    if(!str) return "";
+    let clean = String(str).trim();
+    clean = clean.replace(/\s+/g, "");
+    clean = clean.replace(/[\$#@!%&\*\^]/g, "");
+    clean = clean.replace(/\(one\)/gi, "(一)")
+                 .replace(/\(two\)/gi, "(二)")
+                 .replace(/\(three\)/gi, "(三)")
+                 .replace(/\(four\)/gi, "(四)")
+                 .replace(/\(five\)/gi, "(五)")
+                 .replace(/\(開裝\)/g, "(一)");
+    return clean;
+}
 
 function updateEstimates() {
     try {
@@ -351,12 +365,15 @@ function renderCal(id, data, set, pId, curId, readonly) {
     data.forEach(item => {
         const d = document.createElement('div');
         d.className = 'day' + (item.ox ? ' oxford' : '') + (item.h ? ' holiday' : '');
-        if (set.has(item.d)) d.classList.add('selected');
-        d.innerHTML = "<span>" + item.d + "</span><strong>" + item.s + "</strong>";
+        
+        let cleanedKey = cleanDateStr(item.d);
+        if (set.has(cleanedKey)) d.classList.add('selected');
+        
+        d.innerHTML = "<span>" + cleanedKey + "</span><strong>" + item.s + "</strong>";
         if (!readonly && !item.h) {
             d.onclick = () => {
-                if (set.has(item.d)) { set.delete(item.d); d.classList.remove('selected'); }
-                else { if (set.size >= limit) return alert("已達上限"); set.add(item.d); d.classList.add('selected'); }
+                if (set.has(cleanedKey)) { set.delete(cleanedKey); d.classList.remove('selected'); }
+                else { if (set.size >= limit) return alert("已達上限"); set.add(cleanedKey); d.classList.add('selected'); }
                 document.getElementById(curId).innerText = set.size;
             };
         }
@@ -405,18 +422,21 @@ function cancelRescheduleMode() {
 function startRescheduleMode(oldDate, partType) {
     const r = cloudRecords[currentEditingIndex];
     const group = getScheduleGroup(r.gradeText);
-    const setA = new Set(r.detailsA || []);
-    const setB = new Set(r.detailsB || []);
     
-    rescheduleActiveState = { isMode: true, oldDate: oldDate, partType: partType };
+    let arrA = Array.isArray(r.detailsA) ? r.detailsA : String(r.detailsA || "").split(/[,，\s]+/).filter(Boolean);
+    let arrB = Array.isArray(r.detailsB) ? r.detailsB : String(r.detailsB || "").split(/[,，\s]+/).filter(Boolean);
+    const setA = new Set(arrA.map(cleanDateStr));
+    const setB = new Set(arrB.map(cleanDateStr));
+    
+    rescheduleActiveState = { isMode: true, oldDate: cleanDateStr(oldDate), partType: partType };
     const bar = document.getElementById('rescheduleNoticeBar');
     bar.style.background = "#D4EDDA"; bar.style.borderColor = "#28A745"; bar.style.color = "#155724";
-    bar.innerHTML = "🚀 <b>已鎖定欲調堂日子：[Part " + partType + "] " + oldDate + "</b> -> <u>請現在直接用滑鼠點擊下方任何一個<b>黃色虛線格子</b>完成調堂</u>。 <button onclick=\"cancelRescheduleMode(); triggerNoticeFromAdmin(currentEditingIndex);\" style=\"background:#dc3545; color:white; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; font-weight:bold; margin-left:10px;\">取消調堂</button>";
+    bar.innerHTML = "🚀 <b>已鎖定欲調堂日子：[Part " + partType + "] " + cleanDateStr(oldDate) + "</b> -> <u>請現在直接用滑鼠點擊下方任何一個<b>黃色虛線格子</b>完成調堂</u>。 <button onclick=\"cancelRescheduleMode(); triggerNoticeFromAdmin(currentEditingIndex);\" style=\"background:#dc3545; color:white; border:none; padding:3px 8px; border-radius:4px; cursor:pointer; font-weight:bold; margin-left:10px;\">取消調堂</button>";
 
     document.querySelectorAll('.notice-cal-day').forEach(el => {
-        const dateStr = el.getAttribute('data-date'); if (!dateStr) return;
-        const subA = SCHEDULE_MASTER[group].A.find(x => x.d === dateStr);
-        const subB = SCHEDULE_MASTER[group].B.find(x => x.d === dateStr);
+        const dateStr = cleanDateStr(el.getAttribute('data-date')); if (!dateStr) return;
+        const subA = SCHEDULE_MASTER[group].A.find(x => cleanDateStr(x.d) === dateStr);
+        const subB = SCHEDULE_MASTER[group].B.find(x => cleanDateStr(x.d) === dateStr);
         
         const isHolidayA = subA && (subA.h || subA.s.includes("不開放") || subA.s.includes("假期"));
         const isHolidayB = subB && (subB.h || subB.s.includes("不開放") || subB.s.includes("假期"));
@@ -433,7 +453,7 @@ function handleCalendarContainerClick(event) {
     if (!rescheduleActiveState.isMode) return;
     const targetBox = event.target.closest('.reschedule-targetable');
     if (!targetBox) return;
-    const targetNewDate = targetBox.getAttribute('data-date');
+    const targetNewDate = cleanDateStr(targetBox.getAttribute('data-date'));
     if (targetNewDate) {
         executeClickReschedule(targetNewDate);
     }
@@ -455,8 +475,8 @@ function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB, isA
         if (!Array.isArray(arrA)) { arrA = String(arrA || "").split(/[,，\s]+/).filter(Boolean); }
         if (!Array.isArray(arrB)) { arrB = String(arrB || "").split(/[,，\s]+/).filter(Boolean); }
         
-        const setA = new Set(arrA.map(function(x){ return String(x).trim(); })), 
-              setB = new Set(arrB.map(function(x){ return String(x).trim(); }));
+        const setA = new Set(arrA.map(cleanDateStr)), 
+              setB = new Set(arrB.map(cleanDateStr));
 
         Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
             let title = document.createElement('div'); title.className = 'month-section-title'; title.innerText = "2026年 " + m + "月"; container.appendChild(title);
@@ -470,10 +490,12 @@ function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB, isA
                 if (cell.type === "empty") {
                     box.className = 'notice-cal-day empty-day'; box.innerHTML = '<b>-</b>';
                 } else {
-                    box.className = 'notice-cal-day'; box.setAttribute('data-date', cell.d); box.innerHTML = '<b>' + cell.d + '</b>';
-                    let subA = SCHEDULE_MASTER[group].A.find(x => x.d === cell.d);
-                    let subB = SCHEDULE_MASTER[group].B.find(x => x.d === cell.d);
-                    let hasA = setA.has(cell.d), hasB = setB.has(cell.d);
+                    let axisCleaned = cleanDateStr(cell.d);
+                    box.className = 'notice-cal-day'; box.setAttribute('data-date', axisCleaned); box.innerHTML = '<b>' + axisCleaned + '</b>';
+                    
+                    let subA = SCHEDULE_MASTER[group].A.find(x => cleanDateStr(x.d) === axisCleaned);
+                    let subB = SCHEDULE_MASTER[group].B.find(x => cleanDateStr(x.d) === axisCleaned);
+                    let hasA = setA.has(axisCleaned), hasB = setB.has(axisCleaned);
                     
                     let isHoliday = (subA && subA.h) || (subB && subB.h);
                     
@@ -489,7 +511,7 @@ function buildParentNoticeCalendar(name, gradeText, total, inst, arrA, arrB, isA
                         if (isAdminMode && currentEditingIndex !== null) {
                             let btnGroup = document.createElement('div'); btnGroup.className = 'reschedule-btn-group no-print';
                             let cBtn = document.createElement('button'); cBtn.className = 'action-mini-btn btn-change'; cBtn.innerText = '🔄調堂';
-                            cBtn.onclick = (e) => { e.stopPropagation(); startRescheduleMode(cell.d, hasA?'A':'B'); };
+                            cBtn.onclick = (e) => { e.stopPropagation(); startRescheduleMode(axisCleaned, hasA?'A':'B'); };
                             btnGroup.appendChild(cBtn); box.appendChild(btnGroup);
                         }
                     } else {
@@ -514,12 +536,14 @@ function executeClickReschedule(targetNewDate) {
     if (partType === 'A') {
         if (!r.detailsA) r.detailsA = [];
         if (!Array.isArray(r.detailsA)) r.detailsA = String(r.detailsA).split(/[,，\s]+/).filter(Boolean);
+        r.detailsA = r.detailsA.map(cleanDateStr);
         let idx = r.detailsA.indexOf(oldDate); if (idx > -1) r.detailsA.splice(idx, 1);
         if (!r.detailsA.includes(targetNewDate)) r.detailsA.push(targetNewDate);
         r.countA = r.detailsA.length;
     } else {
         if (!r.detailsB) r.detailsB = [];
         if (!Array.isArray(r.detailsB)) r.detailsB = String(r.detailsB).split(/[,，\s]+/).filter(Boolean);
+        r.detailsB = r.detailsB.map(cleanDateStr);
         let idx = r.detailsB.indexOf(oldDate); if (idx > -1) r.detailsB.splice(idx, 1);
         if (!r.detailsB.includes(targetNewDate)) r.detailsB.push(targetNewDate);
         r.countB = r.detailsB.length;
@@ -555,6 +579,7 @@ function switchDailyView(viewType) {
     generateDailyBoardHtml();
 }
 
+// 修正：當開啟看板時，自動清洗日曆與數據
 function showDailyModal() {
     document.getElementById('dailyListModal').style.display = 'block';
     document.body.className = 'print-mode-daily';
@@ -580,39 +605,43 @@ function generateDailyBoardHtml() {
             if (cell.type === "empty") {
                 htmlContent += "<div class=\"cal-box-day empty-day\"><b>-</b></div>";
             } else {
-                htmlContent += "<div class=\"cal-box-day\"><b>" + cell.d + "</b>";
+                let cellCleaned = cleanDateStr(cell.d);
+                htmlContent += "<div class=\"cal-box-day\"><b>" + cellCleaned + "</b>";
                 let todayCount = 0; let studentListHtml = "";
                 
                 cloudRecords.forEach(r => {
                     var arrA = Array.isArray(r.detailsA) ? r.detailsA : String(r.detailsA || "").split(/[,，\s]+/).filter(Boolean);
                     var arrB = Array.isArray(r.detailsB) ? r.detailsB : String(r.detailsB || "").split(/[,，\s]+/).filter(Boolean);
                     
-                    let isRegisteredAM = arrA.includes(cell.d);
-                    let isRegisteredPM = arrB.includes(cell.d);
+                    arrA = arrA.map(cleanDateStr);
+                    arrB = arrB.map(cleanDateStr);
+                    
+                    let isRegisteredAM = arrA.includes(cellCleaned);
+                    let isRegisteredPM = arrB.includes(cellCleaned);
                     let g = r.gradeText || "";
                     
                     if (currentDailyViewTab === 'AllA' && isRegisteredAM) {
                         todayCount++;
                         let grp = getScheduleGroup(g);
-                        let subA = SCHEDULE_MASTER[grp].A.find(x => x.d === cell.d);
+                        let subA = SCHEDULE_MASTER[grp].A.find(x => cleanDateStr(x.d) === cellCleaned);
                         studentListHtml += "<span class=\"cal-student-tag\" style=\"background:#E3F2FD; color:#0D47A1;\">" + r.name + " <span>(" + g.replace('升','') + "/" + (subA?subA.s:'A') + ")</span></span>";
                     } 
                     else if (currentDailyViewTab === 'BAM' && isRegisteredPM && (g.includes('二') || g.includes('五') || g.includes('六') || g.includes('2') || g.includes('5') || g.includes('6'))) {
                         todayCount++;
                         let grp = getScheduleGroup(g);
-                        let subB = SCHEDULE_MASTER[grp].B.find(x => x.d === cell.d);
+                        let subB = SCHEDULE_MASTER[grp].B.find(x => cleanDateStr(x.d) === cellCleaned);
                         studentListHtml += "<span class=\"cal-student-tag\" style=\"background:#E8F5E9; color:#1B5E20; border-left-color:#4CAF50;\">" + r.name + " <span>(P班/" + (subB?subB.s:'B') + ")</span></span>";
                     } 
                     else if (currentDailyViewTab === 'BPM' && isRegisteredPM && (g.includes('一') || g.includes('三') || g.includes('四') || g.includes('中') || g.includes('1') || g.includes('3') || g.includes('4') || g.includes('F'))) {
                         todayCount++;
                         let grp = getScheduleGroup(g);
-                        let subB = SCHEDULE_MASTER[grp].B.find(x => x.d === cell.d);
+                        let subB = SCHEDULE_MASTER[grp].B.find(x => cleanDateStr(x.d) === cellCleaned);
                         let htmlTagColor = g.includes('中') || g.includes('F') ? 'background:#F3E5F5; color:#4A148C; border-left-color:#9C27B0;' : 'background:#FFF3E0; color:#E65100; border-left-color:#FF9800;';
                         studentListHtml += "<span class=\"cal-student-tag\" style=\"" + htmlTagColor + "\">" + r.name + " <span>(" + g.replace('升','') + "/" + (subB?subB.s:'B') + ")</span></span>";
                     }
                 });
 
-                let isH = (SCHEDULE_MASTER.p1p3p6.A.find(x=>x.d===cell.d) && SCHEDULE_MASTER.p1p3p6.A.find(x=>x.d===cell.d).h) || (SCHEDULE_MASTER.p1p3p6.B.find(x=>x.d===cell.d) && SCHEDULE_MASTER.p1p3p6.B.find(x=>x.d===cell.d).h);
+                let isH = (SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cellCleaned) && SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cellCleaned).h) || (SCHEDULE_MASTER.p1p3p6.B.find(x=>cleanDateStr(x.d)===cellCleaned) && SCHEDULE_MASTER.p1p3p6.B.find(x=>cleanDateStr(x.d)===cellCleaned).h);
                 if (isH) {
                     htmlContent += "<span style=\"color:#E5989B;font-weight:bold;font-size:12px;margin-top:10px;text-align:center;\">紅日假期</span>";
                 } else if (todayCount > 0) {
