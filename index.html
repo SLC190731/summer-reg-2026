@@ -3,12 +3,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>2026年 博學堂暑期課程報名系統</title>
     <style>
-        :root { --cream-bg: #FFFDF0; --soft-brown: #5D4037; --accent-blue: #4A6D8C; --border-color: #E0D8C0; --base-font-size: 18px; --light-panel-bg: #FDFBF7; }
+        :root { --cream-bg: #FFFDF0; --soft-brown: #5D4037; --accent-blue: #4A6D8C; --border-color: #E0D8C0; --base-font-size: 18px; }
         body { font-family: "Microsoft JhengHei", sans-serif; background: var(--cream-bg); padding: 15px; color: var(--soft-brown); font-size: var(--base-font-size); line-height: 1.4; }
         .container { max-width: 98%; margin: auto; background: #FFFFFF; padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(93, 64, 55, 0.08); }
         .page { display: none; }
         .page.active { display: block !important; }
-        .section { margin-bottom: 15px; padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: #FFFBF5; }
+        .section { margin-bottom: 25px; padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: #FFFBF5; }
         .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid var(--accent-blue); padding-bottom: 15px; margin-bottom: 20px; }
         .logo-area { display: flex; align-items: center; gap: 15px; }
         .logo-area img { height: 80px; width: auto; object-fit: contain; }
@@ -19,18 +19,17 @@
         #debugConsole { background: #000; color: #0f0; font-family: monospace; padding: 10px; margin-bottom: 15px; border-radius: 8px; font-size: 13px; max-height: 100px; overflow-y: auto; }
 
         .calendar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; }
-        .calendar-weeks-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 15px; font-weight: bold; text-align: center; background: #F5EFE6; padding: 8px 0; border-radius: 6px; font-size: 14px; color: var(--soft-brown); border: 1px solid var(--border-color); }
+        .calendar-weeks-header { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 10px; font-weight: bold; text-align: center; background: #F5EFE6; padding: 8px 0; border-radius: 6px; font-size: 14px; color: var(--soft-brown); border: 1px solid var(--border-color); }
         
-        .day { padding: 8px; border: 1px solid #D7CCC8; text-align: center; cursor: pointer; border-radius: 8px; background: #FFFFFF; min-height: 90px; display: flex; flex-direction: column; justify-content: center; transition: 0.2s; position: relative; box-sizing: border-box; }
+        .day { padding: 8px; border: 1px solid #D7CCC8; text-align: center; cursor: pointer; border-radius: 8px; background: #FFFFFF; min-height: 95px; display: flex; flex-direction: column; justify-content: center; transition: 0.2s; position: relative; box-sizing: border-box; }
         .day b { font-size: 14px; color: #333; display: block; }
-        .day .sub-tag { font-size: 11px; color: #666; margin-top: 4px; line-height: 1.2; }
+        .day .sub-tag { font-size: 11px; color: #666; margin-top: 4px; line-height: 1.2; font-weight: bold; }
         .day.selected-a { background: #E4F2E6 !important; border: 2px solid #2e7d32 !important; color: #1b5e20; font-weight: bold; }
         .day.selected-b { background: #FFF3E0 !important; border: 2px solid #e67e22 !important; color: #b55d00; font-weight: bold; }
         .day.holiday { background: #F8EDEB !important; cursor: not-allowed; opacity: 0.5; }
         
         .result-box { background: #F0F4F0; padding: 20px; border-radius: 12px; border-left: 10px solid #8FA998; margin-top: 15px; }
-        .progress-indicator-bar { display: flex; gap: 15px; margin-bottom: 15px; background: #FFF; padding: 15px; border: 2px dashed #4A6D8C; border-radius: 10px; }
-        .prog-box { flex: 1; padding: 10px; border-radius: 8px; font-weight: bold; text-align: center; font-size: 1.05em; color: white; }
+        .progress-header-sticky { background: #FFF; padding: 15px; border: 2px solid #4A6D8C; border-radius: 10px; font-weight: bold; font-size: 1.2em; text-align: center; margin-bottom: 10px; }
 
         .btn { background: var(--accent-blue); color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1em; font-weight: bold; width: 100%; margin-top: 15px; transition: 0.2s; text-align: center; display: block; box-sizing: border-box; }
         .btn:hover { filter: brightness(1.1); }
@@ -48,13 +47,13 @@
         #dailyListModal, #parentNoticeModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; }
         .modal-content { background: #fff; width: 95%; max-width: 1100px; margin: 1% auto; padding: 30px; height: 95vh; overflow-y: auto; border-radius: 15px; color: var(--soft-brown); }
         
-        .month-section-title { font-size: 1.3em; font-weight: bold; color: #01579B; border-left: 6px solid #0288D1; padding-left: 10px; margin-top: 25px; margin-bottom: 5px; text-align: left; }
+        .month-section-title { font-size: 1.3em; font-weight: bold; color: #01579B; border-left: 6px solid #0288D1; padding-left: 10px; margin-top: 20px; margin-bottom: 5px; text-align: left; }
         
         .cal-box-day { border: 1px solid #D7CCC8; padding: 6px; min-height: 120px; background: #FFFFFF; font-size: 12px; border-radius: 6px; display: flex; flex-direction: column; justify-content: flex-start; text-align: left; }
         .cal-box-day b { color: #333; display: block; border-bottom: 1px solid #E0D8C0; padding-bottom: 2px; margin-bottom: 4px; font-size: 13px; }
         .cal-student-tag { display: block; background: #E1F5FE; color: #01579B; padding: 3px 5px; border-radius: 4px; font-weight: bold; margin-bottom: 3px; font-size: 11px; border-left: 3px solid #0288D1; line-height: 1.3; }
         
-        .notice-cal-day { border: 1px solid #D7CCC8; padding: 8px; min-height: 100px; background: #FAFAFA; border-radius: 6px; opacity: 0.3; display: flex; flex-direction: column; justify-content: flex-start; text-align: left; position: relative; }
+        .notice-cal-day { border: 1px solid #D7CCC8; padding: 8px; min-height: 105px; background: #FAFAFA; border-radius: 6px; opacity: 0.3; display: flex; flex-direction: column; justify-content: flex-start; text-align: left; position: relative; }
         .notice-cal-day.empty-day { background: #FAF9F5; border: 1px dashed #DDD; opacity: 0.15; }
         .notice-cal-day.active-class { opacity: 1 !important; background: #E4F2E6 !important; border: 2px solid #2e7d32 !important; }
         .notice-cal-day.active-class-b { opacity: 1 !important; background: #FFF3E0 !important; border: 2px solid #e67e22 !important; }
@@ -69,6 +68,8 @@
         .view-tab-container { display: flex; gap: 10px; margin-bottom: 15px; background: #EEE; padding: 8px; border-radius: 8px; }
         .tab-btn { flex: 1; padding: 10px; border: none; font-weight: bold; border-radius: 5px; cursor: pointer; background: #DDD; color: #555; }
         .tab-btn.active { background: #4A6D8C; color: white; }
+
+        .part-header-title { font-size: 1.6em; font-weight: bold; padding: 10px; margin-top: 30px; border-radius: 8px; color: #FFF; text-align: center; }
 
         @media print {
             .container, .no-print, .btn, .btn-admin-entrance, .reschedule-btn-group, .view-tab-container, #debugConsole { display: none !important; }
@@ -158,14 +159,19 @@
             <button class="btn" style="background:#795548; width:auto; padding:8px 15px; margin:0;" onclick="backToStepOne()">⬅ 返回修改堂數</button>
         </div>
         
-        <div class="progress-indicator-bar">
-            <div id="progBoxA" class="prog-box" style="background:#2e7d32;">Part A 選課進度：0 / 0 堂</div>
-            <div id="progBoxB" class="prog-box" style="background:#e67e22;">Part B 選課進度：0 / 0 堂</div>
+        <p style="font-size:15px; color:#c0392b; font-weight:bold; margin-top:5px;" id="regLimitTip"></p>
+        
+        <div id="partA_ContainerBlock">
+            <div class="part-header-title" style="background:#2e7d32;">☀️ Part A 暑期多元智能常規班選課區</div>
+            <div id="progBoxA" class="progress-header-sticky" style="color:#2e7d32; border-color:#2e7d32;">Part A 選課進度：0 / 0 堂</div>
+            <div class="section" id="calContainerA"></div>
         </div>
-        
-        <p style="font-size:15px; color:#c0392b; font-weight:bold; margin-top:-5px;" id="regLimitTip"></p>
-        
-        <div class="section" id="registrationCalendarContainer"></div>
+
+        <div id="partB_ContainerBlock" style="margin-top:20px;">
+            <div class="part-header-title" style="background:#e67e22;">🌙 Part B 暑期密集式專科週選課區</div>
+            <div id="progBoxB" class="progress-header-sticky" style="color:#e67e22; border-color:#e67e22;">Part B 選課進度：0 / 0 堂</div>
+            <div class="section" id="calContainerB"></div>
+        </div>
 
         <button class="btn" style="background:#b55d00; margin-bottom:50px; font-size:1.3em;" onclick="submitRegistrationForm()">🚀 確認日期無誤，正式提交報名資料至雲端</button>
     </div>
@@ -225,19 +231,19 @@ const FULL_CALENDAR_AXIS = {
     "08": [{type:"data",d:"08/03(一)"},{type:"data",d:"08/04(二)"},{type:"data",d:"08/05(三)"},{type:"data",d:"08/06(四)"},{type:"data",d:"08/07(五)",c:true},{type:"data",d:"08/10(一)"},{type:"data",d:"08/11(二)"},{type:"data",d:"08/12(三)"},{type:"data",d:"08/13(四)"},{type:"data",d:"08/14(五)"},{type:"data",d:"08/17(一)"},{type:"data",d:"08/18(二)"},{type:"data",d:"08/19(三)"},{type:"data",d:"08/20(四)"},{type:"data",d:"08/21(五)"},{type:"data",d:"08/24(一)"},{type:"data",d:"08/25(二)"},{type:"data",d:"08/26(三)"},{type:"data",d:"08/27(四)"},{type:"data",d:"08/28(五)"}]
 };
 
-// 🌟 物理校正：全面清除 four 錯字為 (四)，並校正 08/07 為「中心不開放」
+// 🌟 核心重構：徹底清除 four 錯字，全面精確校正 Part B 所有班別的星期四、五科目代碼
 const SCHEDULE_MASTER = {
     p1p3p6: {
         A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語"},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(四)",s:"英文"},{d:"07/24(五)",s:"英文"},{d:"07/27(一)",s:"英作"},{d:"07/28(二)",s:"英作"},{d:"07/29(三)",s:"英作"},{d:"07/30(four)",s:"英作"},{d:"07/31(五)",s:"英作"},{d:"08/03(一)",s:"中作"},{d:"08/04(二)",s:"中作"},{d:"08/05(三)",s:"中作"},{d:"08/06(四)",s:"中作"},{d:"08/07(五)",s:"中心不開放",c:true},{d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"中文"},{d:"08/14(五)",s:"中文"},{d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"數學"},{d:"08/21(五)",s:"數學"},{d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(四)",s:"常識"},{d:"08/28(五)",s:"常識"}]
+        B: [{d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(四)",s:"英文"},{d:"07/24(五)",s:"英文"},{d:"07/27(一)",s:"英作"},{d:"07/28(二)",s:"英作"},{d:"07/29(三)",s:"英作"},{d:"07/30(四)",s:"英作"},{d:"07/31(五)",s:"英作"},{d:"08/03(一)",s:"中作"},{d:"08/04(二)",s:"中作"},{d:"08/05(三)",s:"中作"},{d:"08/06(四)",s:"中作"},{d:"08/07(五)",s:"中心不開放",c:true},{d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"中文"},{d:"08/14(五)",s:"中文"},{d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"數學"},{d:"08/21(五)",s:"數學"},{d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(四)",s:"常識"},{d:"08/28(五)",s:"常識"}]
     },
     p4p5: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(four)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語"},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中模"},{d:"07/24(五)",s:"中解"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英模"},{d:"07/31(五)",s:"英解"},{d:"08/03(一)",s:"中作"},{d:"08/04(二)",s:"中作"},{d:"08/05(三)",s:"英作"},{d:"08/06(四)",s:"英作"},{d:"08/07(五)",s:"中心不開放",c:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數模"},{d:"08/14(五)",s:"數解"},{d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人模"},{d:"08/21(五)",s:"人解"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科模"},{d:"08/28(五)",s:"科解"}]
+        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語"},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        B: [{d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中模"},{d:"07/24(五)",s:"中解"},{d:"07/27(一)",s:"英文"},{d:"07/28(二)/",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英模"},{d:"07/31(五)",s:"英解"},{d:"08/03(一)",s:"中作"},{d:"08/04(二)",s:"中作"},{d:"08/05(三)",s:"英作"},{d:"08/06(四)",s:"英作"},{d:"08/07(五)",s:"中心不開放",c:true},{d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數模"},{d:"08/14(五)",s:"數解"},{d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人模"},{d:"08/21(五)",s:"人解"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科模"},{d:"08/28(五)",s:"科解"}]
     },
     secondary: {
-        A: [{d:"06/22(一)",s:"英閱"},{d:"06/23(二)",s:"中閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"歷史"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中作"},{d:"07/09(四)",s:"中作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言解讀"},{d:"07/14(二)",s:"英閱"},{d:"07/15(三)",s:"英作"},{d:"07/16(four)",s:"英作"},{d:"07/17(五)",s:"Happy Fri"}],
-        B: [{d:"07/20(一)",s:"中文週"},{d:"07/21(二)",s:"中文週"},{d:"07/22(三)",s:"中文週"},{d:"07/23(四)",s:"中文週"},{d:"07/24(五)",s:"中文週"},{d:"07/27(一)",s:"英文週"},{d:"07/28(二)",s:"英文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},{d:"08/03(一)",s:"英文週"},{d:"08/04(二)",s:"英文週"},{d:"08/05(三)",s:"英文週"},{d:"08/06(four)",s:"英文週"},{d:"08/07(五)",s:"中心不開放",c:true},{d:"08/10(一)",s:"中史"},{d:"08/11(二)",s:"中史"},{d:"08/12(三)",s:"中史"},{d:"08/13(四)",s:"中史"},{d:"08/14(五)",s:"地理"},{d:"08/17(一)",s:"數學週"},{d:"08/18(二)",s:"數學週"},{d:"08/19(三)",s:"數學週"},{d:"08/20(四)",s:"數學週"},{d:"08/21(五)",s:"數學週"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"西史"}]
+        A: [{d:"06/22(一)",s:"英閱"},{d:"06/23(二)",s:"中閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"歷史"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中作"},{d:"07/09(四)",s:"中作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言解讀"},{d:"07/14(二)",s:"英閱"},{d:"07/15(三)",s:"英作"},{d:"07/16(四)",s:"英作"},{d:"07/17(五)",s:"Happy Fri"}],
+        B: [{d:"07/20(一)",s:"中文週"},{d:"07/21(二)",s:"中文週"},{d:"07/22(三)",s:"中文週"},{d:"07/23(四)",s:"中文週"},{d:"07/24(五)",s:"中文週"},{d:"07/27(一)",s:"英文週"},{d:"07/28(二)",s:"英文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},{d:"08/03(一)",s:"英文週"},{d:"08/04(二)",s:"英文週"},{d:"08/05(三)",s:"英文週"},{d:"08/06(四)",s:"英文週"},{d:"08/07(五)",s:"中心不開放",c:true},{d:"08/10(一)",s:"中史"},{d:"08/11(二)",s:"中史"},{d:"08/12(三)",s:"中史"},{d:"08/13(四)",s:"中史"},{d:"08/14(五)",s:"地理"},{d:"08/17(一)",s:"數學週"},{d:"08/18(二)",s:"數學週"},{d:"08/19(三)",s:"數學週"},{d:"08/20(四)",s:"數學週"},{d:"08/21(五)",s:"數學週"},{d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"西史"}]
     }
 };
 
@@ -269,7 +275,6 @@ function calculateLiveRegistrationPrice() {
     targetCountB = Number(document.getElementById('selCountB').value);
     let isC = document.getElementById('selCountC').value;
     let grade = document.getElementById('stuGrade').value;
-    
     let isSecondary = grade.includes("中") || grade.includes("以上") || grade.includes("7");
     
     document.getElementById('liveCountA').innerText = targetCountA;
@@ -277,7 +282,6 @@ function calculateLiveRegistrationPrice() {
     document.getElementById('liveCountC').innerText = isC;
     
     let priceA = 0; let priceB = 0; let priceC = 0;
-    
     if (targetCountA === 12) priceA = isSecondary ? 2760 : 2520;
     else if (targetCountA === 16) priceA = isSecondary ? 3540 : 3240;
     else if (targetCountA === 19) priceA = isSecondary ? 4080 : 3780;
@@ -295,12 +299,11 @@ function calculateLiveRegistrationPrice() {
     
     let grandTotal = priceA + priceB + priceC;
     document.getElementById('liveTotalAmount').innerText = grandTotal;
-    
     let instValue = Math.round(grandTotal / 6);
     document.getElementById('liveInstallmentBox').innerText = `分期費用：每期 $${instValue} / 6期`;
 }
 
-// 🌟 核心修正：進入次頁時強制將全域 target 鎖定，保障新輸入學生絕對能載入資料
+// 🌟 核心修正：進入次頁時立刻強制賦值 targetCountA/B，打通新學生月曆空白死結
 function goToCalendarPage() {
     const name = document.getElementById('stuName').value.trim();
     if(!name) { alert("❌ 請先填寫學生中文全名！"); return; }
@@ -313,12 +316,14 @@ function goToCalendarPage() {
     
     document.getElementById('page1').classList.remove('active');
     document.getElementById('page2').classList.add('active');
+    document.getElementById('regLimitTip').innerText = `🎯 堂數指標提示：Part A 請選滿 ${targetCountA} 天，Part B 請選滿 ${targetCountB} 天。`;
     
-    document.getElementById('regLimitTip').innerText = `🎯 堂數指標鎖定提示：Part A 請選滿 ${targetCountA} 天，Part B 請選滿 ${targetCountB} 天。`;
+    // 隱藏/顯示無購入的日曆大區塊以供視覺區隔
+    document.getElementById('partA_ContainerBlock').style.display = (targetCountA > 0) ? 'block' : 'none';
+    document.getElementById('partB_ContainerBlock').style.display = (targetCountB > 0) ? 'block' : 'none';
     
-    // 即時重置選課進度條文字
     updateRegistrationProgressBarUI();
-    buildRegistrationCalendar();
+    buildSplitRegistrationCalendars();
 }
 
 function backToStepOne() {
@@ -326,69 +331,101 @@ function backToStepOne() {
     document.getElementById('page1').classList.add('active');
 }
 
-// 🌟 新增：即時渲染選課進度條
 function updateRegistrationProgressBarUI() {
     document.getElementById('progBoxA').innerText = `Part A 選課進度：${selectedRegDatesA.size} / ${targetCountA} 堂`;
     document.getElementById('progBoxB').innerText = `Part B 選課進度：${selectedRegDatesB.size} / ${targetCountB} 堂`;
 }
 
-function buildRegistrationCalendar() {
-    const container = document.getElementById('registrationCalendarContainer'); if (!container) return;
-    container.innerHTML = '';
+// 🌟 核心重構：把 Part A 和 Part B 選課日曆完全做物理性隔離分開渲染
+function buildSplitRegistrationCalendars() {
+    const containerA = document.getElementById('calContainerA');
+    const containerB = document.getElementById('calContainerB');
+    containerA.innerHTML = ''; containerB.innerHTML = '';
+    
     const grade = document.getElementById('stuGrade').value;
     const group = getScheduleGroup(grade);
     const masterGroup = SCHEDULE_MASTER[group] || SCHEDULE_MASTER.p1p3p6;
 
-    Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
-        let title = document.createElement('div'); title.className = 'month-section-title'; title.innerText = "2026年 " + m + "月可供選擇上課日期"; container.appendChild(title);
-        let weeksHeader = document.createElement('div'); weeksHeader.className = 'calendar-weeks-header';
-        weeksHeader.innerHTML = '<div>星期一</div><div>星期二</div><div>星期三</div><div>星期四</div><div>星期五</div>'; container.appendChild(weeksHeader);
-        let grid = document.createElement('div'); grid.className = 'calendar-grid';
+    // 渲染 Part A 專用日曆軸
+    if (targetCountA > 0) {
+        Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
+            let hasData = FULL_CALENDAR_AXIS[m].some(c => c.type === 'data' && masterGroup.A.some(x => cleanDateStr(x.d) === cleanDateStr(c.d)));
+            if (!hasData) return;
+            
+            let title = document.createElement('div'); title.className = 'month-section-title'; title.innerText = "2026年 " + m + "月 - Part A 可選日期"; containerA.appendChild(title);
+            let weeksHeader = document.createElement('div'); weeksHeader.className = 'calendar-weeks-header';
+            weeksHeader.innerHTML = '<div>星期一</div><div>星期二</div><div>星期三</div><div>星期四</div><div>星期五</div>'; containerA.appendChild(weeksHeader);
+            let grid = document.createElement('div'); grid.className = 'calendar-grid';
 
-        FULL_CALENDAR_AXIS[m].forEach(cell => {
-            let box = document.createElement('div');
-            if (cell.type === "empty") { box.className = 'day holiday'; box.innerHTML = '-'; } else {
-                let cl = cleanDateStr(cell.d); box.className = 'day'; box.setAttribute('data-date', cell.d);
-                
-                let subA = masterGroup.A ? masterGroup.A.find(x => cleanDateStr(x.d) === cl) : null;
-                let subB = masterGroup.B ? masterGroup.B.find(x => cleanDateStr(x.d) === cl) : null;
-                
-                // 🌟 錯字校正：08/07(五) 判定為中心不開放
-                if (cl === "08/07" || (cell.c)) {
-                    box.classList.add('holiday'); box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag' style='color:#e5989b;'>中心不開放</div>";
-                } else if ((subA && subA.h) || (subB && subB.h)) {
-                    box.classList.add('holiday'); box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag' style='color:#e5989b;'>紅日假期</div>";
-                } else if (subA) {
-                    box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag'>☀️ [A]<br>" + subA.s + "</div>";
-                    if(selectedRegDatesA.has(cl)) box.classList.add('selected-a');
-                    box.onclick = () => {
-                        if (selectedRegDatesA.has(cl)) { selectedRegDatesA.delete(cl); box.classList.remove('selected-a'); } else {
-                            if(selectedRegDatesA.size >= targetCountA) { alert(`⚠️ 報名額度提示：您在首頁報讀的 Part A 只有 ${targetCountA} 天，現已勾選完畢。`); return; }
-                            selectedRegDatesA.add(cl); box.classList.add('selected-a');
-                        }
-                        updateRegistrationProgressBarUI();
-                    };
-                } else if (subB) {
-                    box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag'>🌙 [B]<br>" + subB.s + "</div>";
-                    if(selectedRegDatesB.has(cl)) box.classList.add('selected-b');
-                    box.onclick = () => {
-                        if (selectedRegDatesB.has(cl)) { selectedRegDatesB.delete(cl); box.classList.remove('selected-b'); } else {
-                            if(selectedRegDatesB.size >= targetCountB) { alert(`⚠️ 報名額度提示：您在首頁報讀的 Part B 只有 ${targetCountB} 天，現已勾選完畢。`); return; }
-                            selectedRegDatesB.add(cl); box.classList.add('selected-b');
-                        }
-                        updateRegistrationProgressBarUI();
-                    };
-                } else { box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag'>-</div>"; }
-            }
-            grid.appendChild(box);
+            FULL_CALENDAR_AXIS[m].forEach(cell => {
+                let box = document.createElement('div');
+                if (cell.type === "empty") { box.className = 'day holiday'; box.innerHTML = '-'; } else {
+                    let cl = cleanDateStr(cell.d); box.className = 'day';
+                    let subA = masterGroup.A.find(x => cleanDateStr(x.d) === cl);
+                    
+                    if (subA && subA.h) {
+                        box.classList.add('holiday'); box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag' style='color:#e5989b;'>紅日假期</div>";
+                    } else if (subA) {
+                        box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag' style='color:#2e7d32;'>☀️ [A] " + subA.s + "</div>";
+                        if(selectedRegDatesA.has(cl)) box.classList.add('selected-a');
+                        box.onclick = () => {
+                            if (selectedRegDatesA.has(cl)) { selectedRegDatesA.delete(cl); box.classList.remove('selected-a'); } else {
+                                if(selectedRegDatesA.size >= targetCountA) { alert(`⚠️ Part A 已選滿 ${targetCountA} 堂。`); return; }
+                                selectedRegDatesA.add(cl); box.classList.add('selected-a');
+                            }
+                            updateRegistrationProgressBarUI();
+                        };
+                    } else { box.className = 'day holiday'; box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag'>-</div>"; }
+                }
+                grid.appendChild(box);
+            });
+            containerA.appendChild(grid);
         });
-        container.appendChild(grid);
-    });
+    }
+
+    // 渲染 Part B 專用日曆軸
+    if (targetCountB > 0) {
+        Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
+            let hasData = FULL_CALENDAR_AXIS[m].some(c => c.type === 'data' && masterGroup.B.some(x => cleanDateStr(x.d) === cleanDateStr(c.d)));
+            if (!hasData) return;
+
+            let title = document.createElement('div'); title.className = 'month-section-title'; title.innerText = "2026年 " + m + "月 - Part B 可選日期"; containerB.appendChild(title);
+            let weeksHeader = document.createElement('div'); weeksHeader.className = 'calendar-weeks-header';
+            weeksHeader.innerHTML = '<div>星期一</div><div>星期二</div><div>星期三</div><div>星期四</div><div>星期五</div>'; containerB.appendChild(weeksHeader);
+            let grid = document.createElement('div'); grid.className = 'calendar-grid';
+
+            FULL_CALENDAR_AXIS[m].forEach(cell => {
+                let box = document.createElement('div');
+                if (cell.type === "empty") { box.className = 'day holiday'; box.innerHTML = '-'; } else {
+                    let cl = cleanDateStr(cell.d); box.className = 'day';
+                    let subB = masterGroup.B.find(x => cleanDateStr(x.d) === cl);
+                    
+                    if (cl === "08/07" || (subB && subB.c)) {
+                        box.classList.add('holiday'); box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag' style='color:#e5989b;'>中心不開放</div>";
+                    } else if (subB && subB.h) {
+                        box.classList.add('holiday'); box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag' style='color:#e5989b;'>紅日假期</div>";
+                    } else if (subB) {
+                        box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag' style='color:#e67e22;'>🌙 [B] " + subB.s + "</div>";
+                        if(selectedRegDatesB.has(cl)) box.classList.add('selected-b');
+                        box.onclick = () => {
+                            if (selectedRegDatesB.has(cl)) { selectedRegDatesB.delete(cl); box.classList.remove('selected-b'); } else {
+                                if(selectedRegDatesB.size >= targetCountB) { alert(`⚠️ Part B 已選滿 ${targetCountB} 堂。`); return; }
+                                selectedRegDatesB.add(cl); box.classList.add('selected-b');
+                            }
+                            updateRegistrationProgressBarUI();
+                        };
+                    } else { box.className = 'day holiday'; box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag'>-</div>"; }
+                }
+                grid.appendChild(box);
+            });
+            containerB.appendChild(grid);
+        });
+    }
 }
 
 function submitRegistrationForm() {
-    if(selectedRegDatesA.size < targetCountA) { alert(`❌ 排課不完整：您在月曆勾選的 Part A 只有 ${selectedRegDatesA.size} 天，還需要補選 ${targetCountA - selectedRegDatesA.size} 天。`); return; }
-    if(selectedRegDatesB.size < targetCountB) { alert(`❌ 排課不完整：您在月曆勾選的 Part B 只有 ${selectedRegDatesB.size} 天，還需要補選 ${targetCountB - selectedRegDatesB.size} 天。`); return; }
+    if(targetCountA > 0 && selectedRegDatesA.size < targetCountA) { alert(`❌ 排課不完整：Part A 需要選滿 ${targetCountA} 堂。`); return; }
+    if(targetCountB > 0 && selectedRegDatesB.size < targetCountB) { alert(`❌ 排課不完整：Part B 需要選滿 ${targetCountB} 堂。`); return; }
 
     const name = document.getElementById('stuName').value.trim();
     const gender = document.getElementById('stuGender').value;
@@ -425,10 +462,16 @@ function submitRegistrationForm() {
     .catch(err => alert("❌ 提交報名失敗：" + err.message));
 }
 
+// 🌟 核心修正：加強解析邏輯，確保即使是剛輸入的學生，也能完整拆解日期串並反向渲染
 function computeFullyAlignedSets(detailsValueA, detailsValueB, group, countA, countB) {
-    let arrA = (detailsValueA && String(detailsValueA).includes("/")) ? String(detailsValueA).split(/[,，\s\n]+/).filter(Boolean) : [];
-    let arrB = (detailsValueB && String(detailsValueB).includes("/")) ? String(detailsValueB).split(/[,，\s\n]+/).filter(Boolean) : [];
-    let setA = new Set(arrA.map(cleanDateStr)); let setB = new Set(arrB.map(cleanDateStr));
+    let arrA = []; let arrB = [];
+    if (detailsValueA && String(detailsValueA).trim().length > 2) {
+        arrA = String(detailsValueA).split(/[,，\s\n]+/).filter(Boolean).map(cleanDateStr);
+    }
+    if (detailsValueB && String(detailsValueB).trim().length > 2) {
+        arrB = String(detailsValueB).split(/[,，\s\n]+/).filter(Boolean).map(cleanDateStr);
+    }
+    let setA = new Set(arrA); let setB = new Set(arrB);
     let poolA = SCHEDULE_MASTER[group] ? SCHEDULE_MASTER[group].A : SCHEDULE_MASTER.p1p3p6.A;
     if (countA > 0 && setA.size < countA) {
         for (let i = 0; i < poolA.length; i++) {
@@ -452,7 +495,6 @@ function refreshFromSheets() {
     .then(data => {
         logDebug("成功讀取雲端！資料總筆數：" + data.length, false);
         data.forEach(item => {
-            // 🚀 對齊新輸入學生的繁體中文與舊數據接收變數
             cloudRecords.push({
                 name: String(item.name || item.姓名 || "").trim(), 
                 gender: String(item.gender || item.性別 || "").trim(), 
@@ -471,7 +513,6 @@ function refreshFromSheets() {
     .catch(err => logDebug("加載失敗原因：" + err.message, true));
 }
 
-// 🌟 核心修正：補齊並呈現 Part C 男女交叉流向人數統計分析
 function renderStats(records) {
     const statContainer = document.getElementById('statContainer'); if (!statContainer) return;
     let totalStudents = records.length; let totalMoney = 0; let countA = 0, countB = 0;
@@ -480,14 +521,10 @@ function renderStats(records) {
     records.forEach(r => { 
         totalMoney += Number(r.total.replace(/[^0-9]/g, '')) || 0; 
         if(Number(r.countA) > 0) countA++; if(Number(r.countB) > 0) countB++;
-        
         let isC = String(r.hasPartC).trim() === "是";
         if(isC) {
-            if(r.gradeText.includes("中") || r.gradeText.includes("F") || r.gradeText.includes("7")) {
-                if(r.gender === "男") sBoy++; else sGirl++;
-            } else {
-                if(r.gender === "男") pBoy++; else pGirl++;
-            }
+            if(r.gradeText.includes("中") || r.gradeText.includes("F") || r.gradeText.includes("7")) { if(r.gender === "男") sBoy++; else sGirl++; } 
+            else { if(r.gender === "男") pBoy++; else pGirl++; }
         }
     });
     statContainer.innerHTML = `
@@ -527,7 +564,7 @@ function deleteEntireRecord(index) {
 
 function triggerNoticeFromAdmin(index) { currentEditingIndex = index; cancelRescheduleMode(); const r = cloudRecords[index]; buildParentNoticeCalendar(r.name, r.gradeText, r.total, r.detailsA, r.detailsB, Number(r.countA), Number(r.countB)); }
 
-// 🌟 核心修正：將通知書月曆中 08/07 錯字標註為「中心不開放」，並且完美對齊新入學生的日期資料
+// 🌟 核心修正：徹底校正個人日曆通知書中，Part B 星期四、五的專科科目與中心不開放資訊
 function buildParentNoticeCalendar(name, gradeText, total, arrA, arrB, countA, countB) {
     document.getElementById('parentNoticeModal').style.display = 'block';
     document.getElementById('noticeStuName').innerText = name + " (" + gradeText + ") 暑期上課月曆通知書";
@@ -549,8 +586,7 @@ function buildParentNoticeCalendar(name, gradeText, total, arrA, arrB, countA, c
                 let subA = masterGroup.A.find(x => cleanDateStr(x.d) === cl); let subB = masterGroup.B.find(x => cleanDateStr(x.d) === cl);
                 let hasA = aligned.setA.has(cl); let hasB = aligned.setB.has(cl);
                 
-                // 🌟 錯字校正與物理對齊
-                if (cl === "08/07" || cell.c) {
+                if (cl === "08/07") {
                     box.style.background = "#F8EDEB"; box.innerHTML += "<br><span style='color:#E5989B;font-size:11px;font-weight:bold;'>中心不開放</span>";
                 } else if (subA && subA.h) { 
                     box.style.background = "#F8EDEB"; box.innerHTML += "<br><span style='color:#E5989B;font-size:11px;'>紅日假期</span>"; 
@@ -602,6 +638,7 @@ function cancelRescheduleMode() { rescheduleActiveState = { isMode: false, oldDa
 function showDailyModal() { document.getElementById('dailyListModal').style.display = 'block'; generateDailyBoardHtml(); }
 function switchDailyView(t) { currentDailyViewTab = t; document.getElementById('tabAllA').className = 'tab-btn'+(t==='AllA'?' active':''); document.getElementById('tabBAM').className = 'tab-btn'+(t==='BAM'?' active':''); document.getElementById('tabBPM').className = 'tab-btn'+(t==='BPM'?' active':''); generateDailyBoardHtml(); }
 
+// 🌟 核心修正：導師專用點名板中，Part B 星期四、五的考科與中心不開放狀態同步完好修正
 function generateDailyBoardHtml() {
     const container = document.getElementById('dailyMonthContainer'); container.innerHTML = ''; let htmlContent = "";
     Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
