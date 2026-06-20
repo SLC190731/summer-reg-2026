@@ -81,6 +81,17 @@
             body.printing-notice #parentNoticeModal { display: block !important; position: static !important; background: white !important; width: 100% !important; height: auto !important; }
             /* 一鍵列印：只展開導師點名看板（目前檢視的分頁） */
             body.printing-daily #dailyListModal { display: block !important; position: static !important; background: white !important; width: 100% !important; height: auto !important; }
+
+            /* 點名日曆列印：強制橫向，每個星期獨立一頁，整個星期所有課堂壓縮顯示於同一頁 */
+            @page dailyLandscape { size: landscape; margin: 8mm; }
+            body.printing-daily #dailyListModal { page: dailyLandscape; }
+            body.printing-daily .daily-week-block { page: dailyLandscape; break-inside: avoid; page-break-inside: avoid; break-after: page; page-break-after: always; }
+            body.printing-daily .daily-week-block:last-child { break-after: auto; page-break-after: auto; }
+            body.printing-daily .daily-week-block .month-section-title { font-size: 1.1em; margin-top: 0; }
+            body.printing-daily .daily-week-block .calendar-grid { gap: 4px; margin-top: 6px; }
+            body.printing-daily .daily-week-block .cal-box-day { min-height: 0 !important; padding: 4px; font-size: 10px; }
+            body.printing-daily .daily-week-block .cal-box-day b { font-size: 11px; }
+            body.printing-daily .daily-week-block .cal-student-tag { font-size: 9px; padding: 2px 3px; margin-bottom: 2px; line-height: 1.2; }
         }
     </style>
 </head>
@@ -975,44 +986,75 @@ function cancelRescheduleMode() { rescheduleActiveState = { isMode: false, oldDa
 function showDailyModal() { document.getElementById('dailyListModal').style.display = 'block'; generateDailyBoardHtml(); }
 function switchDailyView(t) { currentDailyViewTab = t; document.getElementById('tabAllA').className = 'tab-btn'+(t==='AllA'?' active':''); document.getElementById('tabBAM').className = 'tab-btn'+(t==='BAM'?' active':''); document.getElementById('tabBPM').className = 'tab-btn'+(t==='BPM'?' active':''); document.getElementById('tabSP').className = 'tab-btn'+(t==='SP'?' active':''); generateDailyBoardHtml(); }
 
+// 將時間軸上所有上課日（type:data）依序攤平，再以每 5 天（一至五）切成一個「星期」，
+// 確保跨月份的同一個星期（例如 06/29 一 至 07/03 五）能完整歸入同一頁列印。
+function buildDailyWeeks() {
+    let flat = [];
+    Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
+        FULL_CALENDAR_AXIS[m].forEach(cell => { if (cell.type === 'data') flat.push(cell); });
+    });
+    let weeks = [];
+    for (let i = 0; i < flat.length; i += 5) weeks.push(flat.slice(i, i + 5));
+    return weeks;
+}
+
+// 各 PART 的列印日期範圍（以 MMDD 數值比較）：
+//   Part A：06/22–07/17；Part B（上／下午）：07/20–08/09；特選班（SP）全面覆蓋，不限範圍。
+function partPrintRangeForTab(tab) {
+    if (tab === 'AllA') return [622, 717];
+    if (tab === 'BAM' || tab === 'BPM') return [720, 809];
+    return null; // SP（特選）→ 全部列印
+}
+function clToNum(cl) { return parseInt(cl.slice(0, 2), 10) * 100 + parseInt(cl.slice(3, 5), 10); }
+
+// 產生單一日子格（沿用原本的學生對齊、特選班融合、假期判斷邏輯）。
+function renderDailyCell(cell) {
+    let cl = cleanDateStr(cell.d); let html = "<div class='cal-box-day'><b>" + cell.d + "</b>"; let count = 0; let tags = "";
+    cloudRecords.forEach(r => {
+        let g = r.gradeText || ""; let grp = getScheduleGroup(g); let aligned = computeFullyAlignedSets(r.detailsA, r.detailsB, grp, Number(r.countA), Number(r.countB));
+        let masterGroup = SCHEDULE_MASTER[grp] || SCHEDULE_MASTER.p1p3p6; let subA = masterGroup.A.find(x => cleanDateStr(x.d) === cl); let subB = masterGroup.B.find(x => cleanDateStr(x.d) === cl);
+        let rm = r.remark ? "<span style='display:block;color:#6d4c41;font-size:10px;font-weight:bold;margin-top:2px;'>📝 " + r.remark + "</span>" : "";
+        if (currentDailyViewTab === 'AllA' && aligned.setA.has(cl)) { count++; let subName = subA ? subA.s : "常規"; tags += "<span class='cal-student-tag'>" + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span>" + rm + "</span>"; }
+        else if (currentDailyViewTab === 'BAM' && aligned.setB.has(cl) && (g.includes('二') || g.includes('五') || g.includes('六') || g.includes('2') || g.includes('5') || g.includes('6'))) { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#E8F5E9;color:#1B5E20;border-left-color:#4CAF50;'> " + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span>" + rm + "</span>"; }
+        else if (currentDailyViewTab === 'BPM' && aligned.setB.has(cl) && (g.includes('一') || g.includes('三') || aligned.setB.has(cl) || g.includes('四') || g.includes('中') || g.includes('1') || g.includes('3') || g.includes('4'))) { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#FFF3E0;color:#E65100;border-left-color:#FF9800;'> " + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span>" + rm + "</span>"; }
+        else if (currentDailyViewTab === 'SP') { let spSlot = parseSPData(r.countSP).slots.find(s => s.cl === cl); if (spSlot) { count++; tags += "<span class='cal-student-tag' style='background:#E0F2F1;color:#004D40;border-left-color:#00897B;'> " + r.name + " <span>(" + g.replace('升','') + " / " + (spSlot.time || "整點") + ")</span>" + rm + "</span>"; } }
+    });
+    // ✨ 暑期特選班 學生按日子融合進 Part A／Part B 上午／Part B 下午 點名板，
+    //    讓導師一眼看到當天同場會出現的特選班學生及其開始時間。
+    let spCount = 0; let spTags = "";
+    if (currentDailyViewTab !== 'SP') {
+        cloudRecords.forEach(r => {
+            let spSlot = parseSPData(r.countSP).slots.find(s => s.cl === cl);
+            if (spSlot) { spCount++; let g = r.gradeText || ""; let rm = r.remark ? "<span style='display:block;color:#6d4c41;font-size:10px;font-weight:bold;margin-top:2px;'>📝 " + r.remark + "</span>" : ""; spTags += "<span class='cal-student-tag' style='background:#E0F2F1;color:#004D40;border-left-color:#00897B;'>✨ " + r.name + " <span>(特選 " + g.replace('升','') + " / " + (spSlot.time || "整點") + ")</span>" + rm + "</span>"; }
+        });
+    }
+    let isH = (SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl) && SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl).h);
+    if (cl === "08/07") { html += "<span style='color:#E5989B;font-weight:bold;'>中心不開放</span>"; }
+    else if (isH) { html += "<span style='color:#E5989B;font-weight:bold;'>紅日假期</span>"; }
+    else if (count > 0 || spCount > 0) {
+        let headLine = "";
+        if (count > 0) headLine += "應到: " + count + " 人";
+        if (spCount > 0) headLine += (count > 0 ? " ＋ " : "") + "✨特選 " + spCount + " 人";
+        html += "<span style='color:#0288D1;font-weight:bold;font-size:11px;'>" + headLine + "</span>" + tags + spTags;
+    } else { html += "<span style='color:#ccc;'>無學生上課</span>"; }
+    html += "</div>";
+    return html;
+}
+
 function generateDailyBoardHtml() {
     const container = document.getElementById('dailyMonthContainer'); container.innerHTML = ''; let htmlContent = "";
-    Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
-        htmlContent += "<div class='month-section-title'>2026年 " + m + "月點名板</div><div class='calendar-grid'>";
-        FULL_CALENDAR_AXIS[m].forEach(cell => {
-            if (cell.type === "empty") { htmlContent += "<div class='cal-box-day' style='opacity:0.2;'>-</div>"; } else {
-                let cl = cleanDateStr(cell.d); htmlContent += "<div class='cal-box-day'><b>" + cell.d + "</b>"; let count = 0; let tags = "";
-                cloudRecords.forEach(r => {
-                    let g = r.gradeText || ""; let grp = getScheduleGroup(g); let aligned = computeFullyAlignedSets(r.detailsA, r.detailsB, grp, Number(r.countA), Number(r.countB));
-                    let masterGroup = SCHEDULE_MASTER[grp] || SCHEDULE_MASTER.p1p3p6; let subA = masterGroup.A.find(x => cleanDateStr(x.d) === cl); let subB = masterGroup.B.find(x => cleanDateStr(x.d) === cl);
-                    let rm = r.remark ? "<span style='display:block;color:#6d4c41;font-size:10px;font-weight:bold;margin-top:2px;'>📝 " + r.remark + "</span>" : "";
-                    if (currentDailyViewTab === 'AllA' && aligned.setA.has(cl)) { count++; let subName = subA ? subA.s : "常規"; tags += "<span class='cal-student-tag'>" + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span>" + rm + "</span>"; }
-                    else if (currentDailyViewTab === 'BAM' && aligned.setB.has(cl) && (g.includes('二') || g.includes('五') || g.includes('六') || g.includes('2') || g.includes('5') || g.includes('6'))) { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#E8F5E9;color:#1B5E20;border-left-color:#4CAF50;'> " + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span>" + rm + "</span>"; }
-                    else if (currentDailyViewTab === 'BPM' && aligned.setB.has(cl) && (g.includes('一') || g.includes('三') || aligned.setB.has(cl) || g.includes('四') || g.includes('中') || g.includes('1') || g.includes('3') || g.includes('4'))) { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#FFF3E0;color:#E65100;border-left-color:#FF9800;'> " + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span>" + rm + "</span>"; }
-                    else if (currentDailyViewTab === 'SP') { let spSlot = parseSPData(r.countSP).slots.find(s => s.cl === cl); if (spSlot) { count++; tags += "<span class='cal-student-tag' style='background:#E0F2F1;color:#004D40;border-left-color:#00897B;'> " + r.name + " <span>(" + g.replace('升','') + " / " + (spSlot.time || "整點") + ")</span>" + rm + "</span>"; } }
-                });
-                // ✨ 暑期特選班 學生按日子融合進 Part A／Part B 上午／Part B 下午 點名板，
-                //    讓導師一眼看到當天同場會出現的特選班學生及其開始時間。
-                let spCount = 0; let spTags = "";
-                if (currentDailyViewTab !== 'SP') {
-                    cloudRecords.forEach(r => {
-                        let spSlot = parseSPData(r.countSP).slots.find(s => s.cl === cl);
-                        if (spSlot) { spCount++; let g = r.gradeText || ""; let rm = r.remark ? "<span style='display:block;color:#6d4c41;font-size:10px;font-weight:bold;margin-top:2px;'>📝 " + r.remark + "</span>" : ""; spTags += "<span class='cal-student-tag' style='background:#E0F2F1;color:#004D40;border-left-color:#00897B;'>✨ " + r.name + " <span>(特選 " + g.replace('升','') + " / " + (spSlot.time || "整點") + ")</span>" + rm + "</span>"; }
-                    });
-                }
-                let isH = (SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl) && SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl).h);
-                if (cl === "08/07") { htmlContent += "<span style='color:#E5989B;font-weight:bold;'>中心不開放</span>"; }
-                else if (isH) { htmlContent += "<span style='color:#E5989B;font-weight:bold;'>紅日假期</span>"; }
-                else if (count > 0 || spCount > 0) {
-                    let headLine = "";
-                    if (count > 0) headLine += "應到: " + count + " 人";
-                    if (spCount > 0) headLine += (count > 0 ? " ＋ " : "") + "✨特選 " + spCount + " 人";
-                    htmlContent += "<span style='color:#0288D1;font-weight:bold;font-size:11px;'>" + headLine + "</span>" + tags + spTags;
-                } else { htmlContent += "<span style='color:#ccc;'>無學生上課</span>"; }
-                htmlContent += "</div>";
-            }
-        });
-        htmlContent += "</div>";
+    let weeks = buildDailyWeeks();
+    let range = partPrintRangeForTab(currentDailyViewTab);
+    weeks.forEach(week => {
+        let firstNum = clToNum(cleanDateStr(week[0].d));
+        // 是否屬於目前分頁的 PART 範圍：特選班（range 為 null）全面覆蓋；其餘以該星期週一日子是否落在範圍內判斷。
+        let inPart = !range || (firstNum >= range[0] && firstNum <= range[1]);
+        // 不屬於該 PART 的星期：螢幕仍顯示，但加 no-print 令其不被列印（每個版面只印屬於該 PART 的整個星期）。
+        htmlContent += "<div class='daily-week-block" + (inPart ? "" : " no-print") + "'>";
+        htmlContent += "<div class='month-section-title'>2026年　" + week[0].d + " – " + week[week.length - 1].d + " 點名板</div>";
+        htmlContent += "<div class='calendar-grid'>";
+        week.forEach(cell => { htmlContent += renderDailyCell(cell); });
+        htmlContent += "</div></div>";
     });
     container.innerHTML = htmlContent;
 }
