@@ -139,6 +139,21 @@
                 <option value="否">不參加 Part C 成長之旅 ($0)</option>
                 <option value="是">參加 Part C 成長之旅 (套裝折扣連動計費)</option>
             </select>
+
+            <label style="font-weight:bold; color:#00897b; margin-top:15px; display:block;">✨ 暑期特選班 自選課堂 (加購項目)：</label>
+            <select id="selCountSP" onchange="calculateLiveRegistrationPrice()">
+                <option value="0">不參加 暑期特選班 ($0)</option>
+                <option value="2">2 堂</option>
+                <option value="4">4 堂</option>
+                <option value="6">6 堂</option>
+                <option value="8">8 堂</option>
+                <option value="10">10 堂</option>
+                <option value="12">12 堂</option>
+                <option value="14">14 堂</option>
+                <option value="16">16 堂</option>
+                <option value="20">20 堂</option>
+            </select>
+            <p style="font-size:13px; margin:6px 0 0; color:#00695c;">自選整點開始上課（開放 10:00–17:00），小學 $190／堂、中學 $210／堂。</p>
         </div>
 
         <div class="result-box">
@@ -146,6 +161,7 @@
             <p style="margin:5px 0;">已選 Part A 組合：<span id="liveCountA" style="font-weight:bold;color:#2e7d32;">0</span> 堂 <span id="liveFeeDetailA" style="color:#2e7d32; font-weight:bold; margin-left:10px;">($0)</span></p>
             <p style="margin:5px 0;">已選 Part B 組合：<span id="liveCountB" style="font-weight:bold;color:#e67e22;">0</span> 堂 <span id="liveFeeDetailB" style="color:#e67e22; font-weight:bold; margin-left:10px;">($0)</span></p>
             <p style="margin:5px 0;">加購 Part C 項目：<span id="liveCountC" style="font-weight:bold;color:#9c27b0;">否</span> <span id="liveFeeDetailC" style="color:#9c27b0; font-weight:bold; margin-left:10px;"></span></p>
+            <p style="margin:5px 0;">加購 暑期特選班：<span id="liveCountSP" style="font-weight:bold;color:#00897b;">0</span> 堂 <span id="liveFeeDetailSP" style="color:#00897b; font-weight:bold; margin-left:10px;"></span></p>
             <p style="margin:5px 0; font-size:1.3em; font-weight:bold; color:#d35400; border-top:1px dashed #ccc; padding-top:10px;">核實學費總額：$<span id="liveTotalAmount">0</span></p>
             <p style="margin:5px 0; font-size:1.2em; font-weight:bold; color:#2980b9;" id="liveInstallmentBox">分期費用：每期 $0 / 6期</p>
         </div>
@@ -190,7 +206,7 @@
         <table class="admin-table" id="recordTable">
             <thead>
                 <tr>
-                    <th>姓名 (點擊彈出個人月曆)</th><th>年級</th><th>性別</th><th>總額</th><th>A堂數</th><th>B堂數</th><th>Part C</th><th>登記時間</th><th class="no-print" style="color:#d9534f;">行政控制</th>
+                    <th>姓名 (點擊彈出個人月曆)</th><th>年級</th><th>性別</th><th>總額</th><th>A堂數</th><th>B堂數</th><th>Part C</th><th>特選堂數</th><th>登記時間</th><th class="no-print" style="color:#d9534f;">行政控制</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -296,35 +312,41 @@ function calculateLiveRegistrationPrice() {
     targetCountA = Number(document.getElementById('selCountA').value);
     targetCountB = Number(document.getElementById('selCountB').value);
     let isC = document.getElementById('selCountC').value;
+    let countSP = Number(document.getElementById('selCountSP').value);
     let grade = document.getElementById('stuGrade').value;
     let isSecondary = grade.includes("中") || grade.includes("以上") || grade.includes("7");
-    
+
     document.getElementById('liveCountA').innerText = targetCountA;
     document.getElementById('liveCountB').innerText = targetCountB;
     document.getElementById('liveCountC').innerText = isC;
-    
+    document.getElementById('liveCountSP').innerText = countSP;
+
     let priceA = 0; let priceB = 0; let priceC = 0;
     if (targetCountA === 12) priceA = isSecondary ? 2760 : 2520;
     else if (targetCountA === 16) priceA = isSecondary ? 3540 : 3240;
     else if (targetCountA === 19) priceA = isSecondary ? 4080 : 3780;
-    
+
     if (targetCountB === 20) priceB = isSecondary ? 10080 : 8880;
     else if (targetCountB === 24) priceB = isSecondary ? 11760 : 10320;
     else if (targetCountB === 29) priceB = isSecondary ? 13440 : 12150;
-    
+
     if (isC === "是") {
         if (targetCountB === 0) priceC = isSecondary ? 4900 : 4200;
         else if (targetCountB === 20) priceC = isSecondary ? 3120 : 3060;
         else if (targetCountB === 24) priceC = isSecondary ? 3000 : 2790;
         else if (targetCountB === 29) priceC = isSecondary ? 2940 : 2640;
     }
-    
+
+    // ✨ 暑期特選班：自選整點課堂，小學 $190／堂、中學 $210／堂
+    let priceSP = countSP * (isSecondary ? 210 : 190);
+
     // 即時補上獨立項目金額標記
     document.getElementById('liveFeeDetailA').innerText = priceA > 0 ? `費用: $${priceA}` : `($0)`;
     document.getElementById('liveFeeDetailB').innerText = priceB > 0 ? `費用: $${priceB}` : `($0)`;
     document.getElementById('liveFeeDetailC').innerText = priceC > 0 ? `(加購費用: $${priceC})` : ``;
-    
-    let grandTotal = priceA + priceB + priceC;
+    document.getElementById('liveFeeDetailSP').innerText = priceSP > 0 ? `(加購費用: $${priceSP})` : ``;
+
+    let grandTotal = priceA + priceB + priceC + priceSP;
     document.getElementById('liveTotalAmount').innerText = grandTotal;
     let instValue = Math.round(grandTotal / 6);
     document.getElementById('liveInstallmentBox').innerText = `分期費用：每期 $${instValue} / 6期`;
@@ -333,13 +355,31 @@ function calculateLiveRegistrationPrice() {
 function goToCalendarPage() {
     const name = document.getElementById('stuName').value.trim();
     if(!name) { alert("❌ 請先填寫學生中文全名！"); return; }
-    
+
     targetCountA = Number(document.getElementById('selCountA').value);
     targetCountB = Number(document.getElementById('selCountB').value);
-    
+    const isC = document.getElementById('selCountC').value;
+    const countSP = Number(document.getElementById('selCountSP').value);
+
+    // 🛑 完全沒有選擇任何課程組合
+    if (targetCountA === 0 && targetCountB === 0 && isC !== "是" && countSP === 0) {
+        alert("❌ 請至少選擇 Part A、Part B、Part C 或 暑期特選班 其中一項課程！");
+        return;
+    }
+
+    // 🔮 單購加購項目（Part C 成長之旅 及／或 暑期特選班）：不參與 Part A 及 / 或 Part B，無上課日期需要編排，直接提交報名上雲端
+    if (targetCountA === 0 && targetCountB === 0 && (isC === "是" || countSP > 0)) {
+        selectedRegDatesA.clear();
+        selectedRegDatesB.clear();
+        if (confirm("您只報名了加購項目（🔮 Part C 成長之旅 及／或 ✨ 暑期特選班），無需選擇 Part A / Part B 上課日期，是否確認直接提交報名？")) {
+            submitRegistrationForm();
+        }
+        return;
+    }
+
     selectedRegDatesA.clear();
     selectedRegDatesB.clear();
-    
+
     document.getElementById('page1').classList.remove('active');
     document.getElementById('page2').classList.add('active');
     document.getElementById('regLimitTip').innerText = `🎯 堂數指標提示：Part A 請選滿 ${targetCountA} 天，Part B 請選滿 ${targetCountB} 天。`;
@@ -446,23 +486,25 @@ function buildSplitRegistrationCalendars() {
 }
 
 function submitRegistrationForm() {
+    const isC = document.getElementById('selCountC').value;
+    const countSP = Number(document.getElementById('selCountSP').value);
+    if(targetCountA === 0 && targetCountB === 0 && isC !== "是" && countSP === 0) { alert("❌ 請至少選擇 Part A、Part B、Part C 或 暑期特選班 其中一項課程！"); return; }
     if(targetCountA > 0 && selectedRegDatesA.size < targetCountA) { alert(`❌ 排課不完整：Part A 需要選滿 ${targetCountA} 堂。`); return; }
     if(targetCountB > 0 && selectedRegDatesB.size < targetCountB) { alert(`❌ 排課不完整：Part B 需要選滿 ${targetCountB} 堂。`); return; }
 
     const name = document.getElementById('stuName').value.trim();
     const gender = document.getElementById('stuGender').value;
     const grade = document.getElementById('stuGrade').value;
-    const isC = document.getElementById('selCountC').value;
     const total = document.getElementById('liveTotalAmount').innerText;
-    
+
     let arrA = Array.from(selectedRegDatesA).map(d => d + "(" + getWeekDaySymbol(d, 'A', grade) + ")").join(", ");
     let arrB = Array.from(selectedRegDatesB).map(d => d + "(" + getWeekDaySymbol(d, 'B', grade) + ")").join(", ");
-    
+
     logDebug("正在上傳表單，安全同步寫入雲端試算表...", false);
-    
+
     let payload = {
         name: name, gender: gender, gradeText: grade, total: total,
-        A堂數: targetCountA, B堂數: targetCountB, PartC: isC,
+        A堂數: targetCountA, B堂數: targetCountB, PartC: isC, 特選堂數: countSP,
         timestamp: new Date().toLocaleString(), 詳細日期A: arrA, 詳細日期B: arrB
     };
 
@@ -477,6 +519,7 @@ function submitRegistrationForm() {
         document.getElementById('selCountA').value = "0";
         document.getElementById('selCountB').value = "0";
         document.getElementById('selCountC').value = "否";
+        document.getElementById('selCountSP').value = "0";
         calculateLiveRegistrationPrice();
         document.getElementById('page2').classList.remove('active');
         document.getElementById('page1').classList.add('active');
@@ -543,6 +586,7 @@ function refreshFromSheets() {
                 detailsA: String(item.詳細日期A || item.detailsA || "").trim(), 
                 detailsB: String(item.詳細日期B || item.detailsB || "").trim(), 
                 hasPartC: String(item.PartC || item.hasPartC || "否").trim(),
+                countSP: String(item.特選堂數 || item.countSP || "0").trim(),
                 timestamp: String(item.timestamp || item.登記時間 || "").trim()
             });
         });
@@ -555,13 +599,15 @@ function renderStats(records) {
     const statContainer = document.getElementById('statContainer'); if (!statContainer) return;
     let totalStudents = records.length; let totalMoney = 0; let countA = 0, countB = 0;
     let pBoy = 0, pGirl = 0, sBoy = 0, sGirl = 0;
-    
-    records.forEach(r => { 
-        totalMoney += Number(r.total.replace(/[^0-9]/g, '')) || 0; 
+    let countSPStudents = 0, countSPLessons = 0;
+
+    records.forEach(r => {
+        totalMoney += Number(r.total.replace(/[^0-9]/g, '')) || 0;
         if(Number(r.countA) > 0) countA++; if(Number(r.countB) > 0) countB++;
+        if(Number(r.countSP) > 0) { countSPStudents++; countSPLessons += Number(r.countSP); }
         let isC = String(r.hasPartC).trim() === "是";
         if(isC) {
-            if(r.gradeText.includes("中") || r.gradeText.includes("F") || r.gradeText.includes("7")) { if(r.gender === "男") sBoy++; else sGirl++; } 
+            if(r.gradeText.includes("中") || r.gradeText.includes("F") || r.gradeText.includes("7")) { if(r.gender === "男") sBoy++; else sGirl++; }
             else { if(r.gender === "男") pBoy++; else pGirl++; }
         }
     });
@@ -574,6 +620,7 @@ function renderStats(records) {
         <div class="stat-badge" style="background:#e91e63;">Part C 小學女：${pGirl} 人</div>
         <div class="stat-badge" style="background:#34495e;">Part C 中學男：${sBoy} 人</div>
         <div class="stat-badge" style="background:#9c27b0;">Part C 中學女：${sGirl} 人</div>
+        <div class="stat-badge" style="background:#00897b;">暑期特選班：${countSPStudents} 人 / 共 ${countSPLessons} 堂</div>
     `;
 }
 
@@ -585,7 +632,8 @@ function renderAdminTable(records) {
             "<td class='clickable-name' onclick='triggerNoticeFromAdmin(" + index + ")'>" + r.name + "</td>" +
             "<td>" + r.gradeText + "</td><td>" + r.gender + "</td><td>$" + r.total + "</td>" +
             "<td>" + r.countA + "</td><td>" + r.countB + "</td><td>" + r.hasPartC + "</td>" +
-            "<td>" + r.timestamp + "</td>" + 
+            "<td>" + (r.countSP || "0") + "</td>" +
+            "<td>" + r.timestamp + "</td>" +
             "<td class='no-print'><button class='btn-delete-rec' id='delBtn_"+index+"' onclick='deleteEntireRecord(" + index + ")'>❌ 刪除</button></td>" +
             "</tr>"; 
     });
