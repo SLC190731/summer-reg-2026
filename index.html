@@ -232,6 +232,8 @@
 const scriptURL = 'https://script.google.com/macros/s/AKfycbytG9-GmPKQnHUazB0Lm6YyzE0plxtwrnz0BLUxL6xZ4FKE1qyon0AaMZ2qG3xuJ1oz/exec';
 // ✨ 暑期特選班 排課資料改存於 Netlify Database（我們可控的雲端），確保日子＋時間能被寫入與回讀。
 const SP_API = '/.netlify/functions/sp';
+// 💰 折扣優惠／備註同樣改存於 Netlify Database：避免外部試算表整行覆寫洗掉已選日子，並確保可靠保存與回讀。
+const OVERRIDES_API = '/.netlify/functions/overrides';
 const ADMIN_PASSWORD_KEY = "skylar2026";
 
 let cloudRecords = [];
@@ -618,6 +620,8 @@ function submitRegistrationForm() {
         特選堂數: arrSP || String(countSP), countSP: countSP, 特選詳情: arrSP, detailsSP: arrSP,
         詳細日期A: arrA, detailsA: arrA,
         詳細日期B: arrB, detailsB: arrB,
+        折扣優惠: 0, 折扣: 0, discount: 0,
+        備註: "", remark: "",
         timestamp: stamp, 登記時間: stamp
     };
 
@@ -699,9 +703,10 @@ function refreshFromSheets() {
     cloudRecords = [];
     Promise.all([
         fetch(scriptURL).then(res => res.json()).catch(() => []),
-        fetch(SP_API).then(res => res.json()).catch(() => [])
+        fetch(SP_API).then(res => res.json()).catch(() => []),
+        fetch(OVERRIDES_API).then(res => res.json()).catch(() => [])
     ])
-    .then(([data, spData]) => {
+    .then(([data, spData, ovData]) => {
         logDebug("成功讀取雲端！資料總筆數：" + (Array.isArray(data) ? data.length : 0), false);
         (Array.isArray(data) ? data : []).forEach(item => {
             cloudRecords.push({
@@ -721,6 +726,7 @@ function refreshFromSheets() {
             });
         });
         mergeSPRecords(Array.isArray(spData) ? spData : []);
+        mergeOverrides(Array.isArray(ovData) ? ovData : []);
         renderStats(cloudRecords); renderAdminTable(cloudRecords);
     })
     .catch(err => logDebug("加載失敗原因：" + err.message, true));
@@ -741,6 +747,19 @@ function mergeSPRecords(spData) {
                 total: String(sp.total || "0").trim(), countA: "0", countB: "0",
                 detailsA: "", detailsB: "", hasPartC: "否", countSP: detail, discount: "0", remark: "", timestamp: ""
             });
+        }
+    });
+}
+
+// 💰 把 Netlify 雲端資料庫的折扣優惠／備註合併進名冊（以姓名為鍵，DB 為權威來源）。
+// 折扣與備註是貼附在既有學生紀錄上的資料，故只覆寫已存在的學生，不另建新紀錄。
+function mergeOverrides(ovData) {
+    ovData.forEach(o => {
+        const nm = String(o.name || "").trim(); if (!nm) return;
+        const existing = cloudRecords.find(r => r.name === nm);
+        if (existing) {
+            existing.discount = String(o.discount || "0").trim();
+            existing.remark = String(o.remark || "").trim();
         }
     });
 }
@@ -810,7 +829,8 @@ function deleteEntireRecord(index) {
         const btn = document.getElementById("delBtn_" + index); if(btn) btn.innerText = "⏳...";
         Promise.all([
             fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete_record', name: r.name }) }),
-            fetch(SP_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', name: r.name }) }).catch(() => {})
+            fetch(SP_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', name: r.name }) }).catch(() => {}),
+            fetch(OVERRIDES_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', name: r.name }) }).catch(() => {})
         ])
         .then(() => { alert("🎉 刪除成功。"); refreshFromSheets(); });
     }
@@ -835,13 +855,11 @@ function editDiscountRemark(index) {
     r.discount = String(discNum);
     r.remark = remark;
 
-    fetch(scriptURL, {
-        method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            action: 'update_record', name: r.name,
-            折扣優惠: discNum, 折扣: discNum, discount: discNum,
-            備註: remark, remark: remark
-        })
+    // 寫入 Netlify 雲端資料庫（權威來源）。不再經外部試算表 update_record，
+    // 以免整行覆寫把該生已選的 Part A／Part B 日子洗掉。
+    fetch(OVERRIDES_API, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: r.name, discount: String(discNum), remark: remark })
     })
     .then(() => { alert(`🎉 已更新【${r.name}】的折扣優惠與備註（折扣後應繳 $${Math.max(0, grossNum - discNum)}）。`); refreshFromSheets(); })
     .catch(err => alert("❌ 更新失敗：" + err.message));
