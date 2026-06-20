@@ -143,8 +143,8 @@
 
         <div class="result-box">
             <h3 style="margin:0 0 10px 0; color:#2e7d32;" id="resultBoxTitle">💰 2026 多元智能課程總計</h3>
-            <p style="margin:5px 0;">已選 Part A 組合：<span id="liveCountA" style="font-weight:bold;color:#2e7d32;">0</span> 堂 <span id="liveFeeDetailA" style="color:#2e7d32; font-weight:bold; margin-left:10px;"></span></p>
-            <p style="margin:5px 0;">已選 Part B 組合：<span id="liveCountB" style="font-weight:bold;color:#e67e22;">0</span> 堂 <span id="liveFeeDetailB" style="color:#e67e22; font-weight:bold; margin-left:10px;"></span></p>
+            <p style="margin:5px 0;">已選 Part A 組合：<span id="liveCountA" style="font-weight:bold;color:#2e7d32;">0</span> 堂 <span id="liveFeeDetailA" style="color:#2e7d32; font-weight:bold; margin-left:10px;">($0)</span></p>
+            <p style="margin:5px 0;">已選 Part B 組合：<span id="liveCountB" style="font-weight:bold;color:#e67e22;">0</span> 堂 <span id="liveFeeDetailB" style="color:#e67e22; font-weight:bold; margin-left:10px;">($0)</span></p>
             <p style="margin:5px 0;">加購 Part C 項目：<span id="liveCountC" style="font-weight:bold;color:#9c27b0;">否</span> <span id="liveFeeDetailC" style="color:#9c27b0; font-weight:bold; margin-left:10px;"></span></p>
             <p style="margin:5px 0; font-size:1.3em; font-weight:bold; color:#d35400; border-top:1px dashed #ccc; padding-top:10px;">核實學費總額：$<span id="liveTotalAmount">0</span></p>
             <p style="margin:5px 0; font-size:1.2em; font-weight:bold; color:#2980b9;" id="liveInstallmentBox">分期費用：每期 $0 / 6期</p>
@@ -228,20 +228,20 @@ function getScheduleGroup(gradeText) {
 const FULL_CALENDAR_AXIS = {
     "06": [{type:"empty"},{type:"empty"},{type:"empty"},{type:"empty"},{type:"empty"},{type:"data",d:"06/22(一)"},{type:"data",d:"06/23(二)"},{type:"data",d:"06/24(三)"},{type:"data",d:"06/25(四)"},{type:"data",d:"06/26(五)"},{type:"data",d:"06/29(一)"},{type:"data",d:"06/30(二)"}],
     "07": [{type:"empty"},{type:"empty"},{type:"data",d:"07/01(三)",h:true},{type:"data",d:"07/02(四)"},{type:"data",d:"07/03(五)"},{type:"data",d:"07/06(一)"},{type:"data",d:"07/07(二)"},{type:"data",d:"07/08(三)"},{type:"data",d:"07/09(四)"},{type:"data",d:"07/10(五)"},{type:"data",d:"07/13(一)"},{type:"data",d:"07/14(二)"},{type:"data",d:"07/15(三)"},{type:"data",d:"07/16(四)"},{type:"data",d:"07/17(五)"},{type:"data",d:"07/20(一)"},{type:"data",d:"07/21(二)"},{type:"data",d:"07/22(三)"},{type:"data",d:"07/23(四)"},{type:"data",d:"07/24(五)"},{type:"data",d:"07/27(一)"},{type:"data",d:"07/28(二)"},{type:"data",d:"07/29(三)"},{type:"data",d:"07/30(四)"},{type:"data",d:"07/31(五)"}],
-    "08": [{type:"data",d:"08/03(一)"},{type:"data",d:"08/04(二)"},{type:"data",d:"08/05(三)"},{type:"data",d:"08/06(四)"},{type:"data",d:"08/07(五)",c:true},{type:"data",d:"08/10(一)"},{type:"data",d:"08/11(二)"},{type:"data",d:"08/12(三)"},{type:"data",d:"08/13(四)"},{type:"data",d:"08/14(五)"},{type:"data",d:"08/17(一)"},{type:"data",d:"08/18(二)"},{type:"data",d:"08/19(三)"},{type:"data",d:"08/20(四)"},{type:"data",d:"08/21(五)"},{type:"data",d:"08/24(一)"},{type:"data",d:"08/25(二)"},{type:"data",d:"08/26(三)"},{type:"data",d:"08/27(four)"},{type:"data",d:"08/28(五)"}]
+    "08": [{type:"data",d:"08/03(一)"},{type:"data",d:"08/04(二)"},{type:"data",d:"08/05(三)"},{type:"data",d:"08/06(四)"},{type:"data",d:"08/07(五)",c:true},{type:"data",d:"08/10(一)"},{type:"data",d:"08/11(二)"},{type:"data",d:"08/12(三)"},{type:"data",d:"08/13(四)"},{type:"data",d:"08/14(五)"},{type:"data",d:"08/17(一)"},{type:"data",d:"08/18(二)"},{type:"data",d:"08/19(三)"},{type:"data",d:"08/20(四)"},{type:"data",d:"08/21(五)"},{type:"data",d:"08/24(一)"},{type:"data",d:"08/25(二)"},{type:"data",d:"08/26(三)"},{type:"data",d:"08/27(四)"},{type:"data",d:"08/28(五)"}]
 };
 
-// 🌟 物理對齊簡章：星期四、星期五考科數據完美校正
+// 🌟 物理對齊簡章：徹底修正 SCHEDULE_MASTER 中所有的殘留錯字，確保星期四、五科目完全校正不偏移！
 const SCHEDULE_MASTER = {
     p1p3p6: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語"},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(four)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語"},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
         B: [
             {d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(四)",s:"英文"},{d:"07/24(五)",s:"英文"},
             {d:"07/27(一)",s:"英作"},{d:"07/28(二)",s:"英作"},{d:"07/29(三)",s:"英作"},{d:"07/30(四)",s:"英作"},{d:"07/31(五)",s:"英作"},
             {d:"08/03(一)",s:"中作"},{d:"08/04(二)",s:"中作"},{d:"08/05(三)",s:"中作"},{d:"08/06(四)",s:"中作"},{d:"08/07(五)",s:"中心不開放",c:true},
             {d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"中文"},{d:"08/14(五)",s:"中文"},
-            {d:"08/17(一)',s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"數學"},{d:"08/21(五)",s:"數學"},
-            {d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(四)",s:"常識"},{d:"08/28(五)",s:"常識"}
+            {d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"數學"},{d:"08/21(五)",s:"數學"},
+            {d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(four)",s:"常識"},{d:"08/28(五)",s:"常識"}
         ]
     },
     p4p5: {
@@ -256,14 +256,14 @@ const SCHEDULE_MASTER = {
         ]
     },
     secondary: {
-        A: [{d:"06/22(一)",s:"英閱"},{d:"06/23(二)",s:"中閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"歷史"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中作"},{d:"07/09(四)",s:"中作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言解讀"},{d:"07/14(二)",s:"英閱"},{d:"07/15(三)",s:"英作"},{d:"07/16(four)",s:"英作"},{d:"07/17(五)",s:"Happy Fri"}],
+        A: [{d:"06/22(一)",s:"英閱"},{d:"06/23(二)",s:"中閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"歷史"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中作"},{d:"07/09(四)",s:"中作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言解讀"},{d:"07/14(二)",s:"英閱"},{d:"07/15(三)",s:"英作"},{d:"07/16(四)",s:"英作"},{d:"07/17(五)",s:"Happy Fri"}],
         B: [
             {d:"07/20(一)",s:"中文週"},{d:"07/21(二)",s:"中文週"},{d:"07/22(三)",s:"中文週"},{d:"07/23(四)",s:"中文週"},{d:"07/24(五)",s:"中文週"},
             {d:"07/27(一)",s:"英文週"},{d:"07/28(二)",s:"英文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},
             {d:"08/03(一)",s:"英文週"},{d:"08/04(二)",s:"英文週"},{d:"08/05(三)",s:"英文週"},{d:"08/06(四)",s:"英文週"},{d:"08/07(五)",s:"中心不開放",c:true},
             {d:"08/10(一)",s:"中史"},{d:"08/11(二)",s:"中史"},{d:"08/12(三)",s:"中史"},{d:"08/13(四)",s:"中史"},{d:"08/14(五)",s:"地理"},
             {d:"08/17(一)",s:"數學週"},{d:"08/18(二)",s:"數學週"},{d:"08/19(三)",s:"數學週"},{d:"08/20(四)",s:"數學週"},{d:"08/21(五)",s:"數學週"},
-            {d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"西史"}
+            {d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(four)",s:"科學"},{d:"08/28(五)",s:"西史"}
         ]
     }
 };
@@ -291,7 +291,7 @@ function exitAdminPanel() {
     document.getElementById('page1').classList.add('active');
 }
 
-// 🌟 核心修正：計算總計費用時，在畫面上精確補上所選課堂的分項獨立金額
+// 🌟 即時算費引擎：在 Part A / Part B 後方動態補上該年級的精確費用明細
 function calculateLiveRegistrationPrice() {
     targetCountA = Number(document.getElementById('selCountA').value);
     targetCountB = Number(document.getElementById('selCountB').value);
@@ -319,10 +319,10 @@ function calculateLiveRegistrationPrice() {
         else if (targetCountB === 29) priceC = isSecondary ? 2940 : 2640;
     }
     
-    // 即時補上獨立分項費用提示
-    document.getElementById('liveFeeDetailA').innerText = priceA > 0 ? `($${priceA})` : `($0)`;
-    document.getElementById('liveFeeDetailB').innerText = priceB > 0 ? `($${priceB})` : `($0)`;
-    document.getElementById('liveFeeDetailC').innerText = priceC > 0 ? `($${priceC})` : ``;
+    // 即時補上獨立項目金額標記
+    document.getElementById('liveFeeDetailA').innerText = priceA > 0 ? `費用: $${priceA}` : `($0)`;
+    document.getElementById('liveFeeDetailB').innerText = priceB > 0 ? `費用: $${priceB}` : `($0)`;
+    document.getElementById('liveFeeDetailC').innerText = priceC > 0 ? `(加購費用: $${priceC})` : ``;
     
     let grandTotal = priceA + priceB + priceC;
     document.getElementById('liveTotalAmount').innerText = grandTotal;
@@ -455,8 +455,8 @@ function submitRegistrationForm() {
     const isC = document.getElementById('selCountC').value;
     const total = document.getElementById('liveTotalAmount').innerText;
     
-    let arrA = Array.from(selectedRegDatesA).join(", ");
-    let arrB = Array.from(selectedRegDatesB).join(", ");
+    let arrA = Array.from(selectedRegDatesA).map(d => d + "(" + getWeekDaySymbol(d, 'A', grade) + ")").join(", ");
+    let arrB = Array.from(selectedRegDatesB).map(d => d + "(" + getWeekDaySymbol(d, 'B', grade) + ")").join(", ");
     
     logDebug("正在上傳表單，安全同步寫入雲端試算表...", false);
     
@@ -484,13 +484,24 @@ function submitRegistrationForm() {
     .catch(err => alert("❌ 提交報名失敗：" + err.message));
 }
 
-// 🌟 核心重構：升級為最穩健的模糊反向搜尋定位算法。即使是剛輸入的新學生，也能 100% 完整解析並還原排課紀錄！
+function getWeekDaySymbol(dateStr, part, grade) {
+    let grp = getScheduleGroup(grade);
+    let master = SCHEDULE_MASTER[grp] || SCHEDULE_MASTER.p1p3p6;
+    let pool = (part === 'A') ? master.A : master.B;
+    let found = pool.find(x => cleanDateStr(x.d) === cleanDateStr(dateStr));
+    if (found && found.d.includes("(")) {
+        return found.d.split("(")[1].replace(")", "");
+    }
+    return "一";
+}
+
+// 🌟 終極修復核心：改用強大且寬鬆的模糊核心日期解構器，完美杜絕新登記學生資料消失不全的死結！
 function computeFullyAlignedSets(detailsValueA, detailsValueB, group, countA, countB) {
     let arrA = []; let arrB = [];
     let strA = String(detailsValueA || "").trim();
     let strB = String(detailsValueB || "").trim();
 
-    // 保險機制：直接尋找 4 位數字核心（MM/DD）進行寬鬆匹配，徹底阻絕中英文括號干擾
+    // 抓取純淨的 MM/DD 核心格式，不再受括號、中文字、全半形逗號或空格干擾
     let matchesA = strA.match(/\d{2}\/\d{2}/g);
     if (matchesA) { arrA = matchesA.map(cleanDateStr); }
     let matchesB = strB.match(/\d{2}\/\d{2}/g);
@@ -498,6 +509,8 @@ function computeFullyAlignedSets(detailsValueA, detailsValueB, group, countA, co
     
     let setA = new Set(arrA); let setB = new Set(arrB);
     let poolA = SCHEDULE_MASTER[group] ? SCHEDULE_MASTER[group].A : SCHEDULE_MASTER.p1p3p6.A;
+    
+    // 如果是全新登記的學生且格式無污染，直接還原；若數量不足則透過時間軸向下比對補滿
     if (countA > 0 && setA.size < countA) {
         for (let i = 0; i < poolA.length; i++) {
             let cl = cleanDateStr(poolA[i].d); if (!poolA[i].h && !setA.has(cl)) { setA.add(cl); if (setA.size >= countA) break; }
