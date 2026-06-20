@@ -155,7 +155,7 @@
                 <option value="16">16 堂</option>
                 <option value="20">20 堂</option>
             </select>
-            <p style="font-size:13px; margin:6px 0 0; color:#00695c;">自選整點開始上課（開放 10:00–15:00），小學 $190／堂、中學 $210／堂。</p>
+            <p style="font-size:13px; margin:6px 0 0; color:#00695c;">自選整點開始上課（開放 10:00–15:00，每堂 2 小時），小學 $380／堂、中學 $420／堂。<b style="color:#c0392b;">特選班費用須全數繳付，不設分期。</b></p>
         </div>
 
         <div class="result-box">
@@ -375,8 +375,8 @@ function calculateLiveRegistrationPrice() {
         else if (targetCountB === 29) priceC = isSecondary ? 2940 : 2640;
     }
 
-    // ✨ 暑期特選班：自選整點課堂，小學 $190／堂、中學 $210／堂
-    let priceSP = countSP * (isSecondary ? 210 : 190);
+    // ✨ 暑期特選班：自選整點課堂（每堂 2 小時），小學 $380／堂、中學 $420／堂
+    let priceSP = countSP * (isSecondary ? 420 : 380);
 
     // 即時補上獨立項目金額標記
     document.getElementById('liveFeeDetailA').innerText = priceA > 0 ? `費用: $${priceA}` : `($0)`;
@@ -386,8 +386,12 @@ function calculateLiveRegistrationPrice() {
 
     let grandTotal = priceA + priceB + priceC + priceSP;
     document.getElementById('liveTotalAmount').innerText = grandTotal;
-    let instValue = Math.round(grandTotal / 6);
-    document.getElementById('liveInstallmentBox').innerText = `分期費用：每期 $${instValue} / 6期`;
+    // 特選班費用不接受分期，只就 Part A／B／C 計算每期金額；特選班費用須全數另繳。
+    let installBase = priceA + priceB + priceC;
+    let instValue = Math.round(installBase / 6);
+    let instText = `分期費用：每期 $${instValue} / 6期`;
+    if (priceSP > 0) instText += `（不含特選班 $${priceSP}，特選班須全數繳付）`;
+    document.getElementById('liveInstallmentBox').innerText = instText;
 }
 
 function goToCalendarPage() {
@@ -801,11 +805,15 @@ function triggerNoticeFromAdmin(index) { currentEditingIndex = index; cancelResc
 function buildParentNoticeCalendar(name, gradeText, total, arrA, arrB, countA, countB) {
     document.getElementById('parentNoticeModal').style.display = 'block';
     document.getElementById('noticeStuName').innerText = name + " (" + gradeText + ") 暑期上課月曆通知書";
-    document.getElementById('noticeInst').innerText = Math.round((Number(total.replace(/[^0-9]/g, '')) || 0) / 6);
-    const container = document.getElementById('noticeCalendarContainer'); container.innerHTML = '';
-    const group = getScheduleGroup(gradeText); const aligned = computeFullyAlignedSets(arrA, arrB, group, countA, countB);
     // ✨ 暑期特選班 日子＋時間：由目前學生紀錄的「特選堂數」欄解析後標示於月曆
     const spRec = (currentEditingIndex != null && cloudRecords[currentEditingIndex]) ? parseSPData(cloudRecords[currentEditingIndex].countSP) : { slots: [] };
+    // 特選班費用不接受分期：每期金額只就扣除特選班費後的學費計算。
+    const totalNum = Number(String(total).replace(/[^0-9]/g, '')) || 0;
+    const isSecondaryNotice = /中|以上|7/.test(gradeText || "");
+    const spFee = (spRec.count || 0) * (isSecondaryNotice ? 420 : 380);
+    document.getElementById('noticeInst').innerText = Math.round(Math.max(0, totalNum - spFee) / 6);
+    const container = document.getElementById('noticeCalendarContainer'); container.innerHTML = '';
+    const group = getScheduleGroup(gradeText); const aligned = computeFullyAlignedSets(arrA, arrB, group, countA, countB);
     const spMap = {}; spRec.slots.forEach(s => { if (s.cl) spMap[s.cl] = s.time || ""; });
 
     Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
