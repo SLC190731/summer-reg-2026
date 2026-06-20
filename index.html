@@ -226,8 +226,10 @@
 <div id="dailyListModal"><div class="modal-content"><div style="display:flex; justify-content: space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:10px;"><h3 style="margin:0;">📅 導師專用：暑期每日上課名單看板</h3><button class="btn" style="background:#795548; width:auto; margin:0;" onclick="document.getElementById('dailyListModal').style.display='none';">關閉</button></div><div class="view-tab-container no-print" style="margin-top:15px;"><button id="tabAllA" class="tab-btn active" onclick="switchDailyView('AllA')">☀️ 全體 Part A 名單</button><button id="tabBAM" class="tab-btn" onclick="switchDailyView('BAM')">☀️ Part B 上午班 (P2, P5, P6)</button><button id="tabBPM" class="tab-btn" onclick="switchDailyView('BPM')">🌙 Part B 下午班 (P1, P3, P4, 中學)</button><button id="tabSP" class="tab-btn" onclick="switchDailyView('SP')">✨ 暑期特選班</button></div><div id="dailyMonthContainer"></div></div></div>
 
 <script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycbytG9-GmPKQnHUazB0Lm6YyzE0plxtwrnz0BLUxL6xZ4FKE1qyon0AaMZ2qG3xuJ1oz/exec'; 
-const ADMIN_PASSWORD_KEY = "skylar2026"; 
+const scriptURL = 'https://script.google.com/macros/s/AKfycbytG9-GmPKQnHUazB0Lm6YyzE0plxtwrnz0BLUxL6xZ4FKE1qyon0AaMZ2qG3xuJ1oz/exec';
+// ✨ 暑期特選班 排課資料改存於 Netlify Database（我們可控的雲端），確保日子＋時間能被寫入與回讀。
+const SP_API = '/.netlify/functions/sp';
+const ADMIN_PASSWORD_KEY = "skylar2026";
 
 let cloudRecords = [];
 let currentDailyViewTab = 'AllA';
@@ -617,6 +619,16 @@ function submitRegistrationForm() {
         body: JSON.stringify(payload)
     })
     .then(() => {
+        // ✨ 暑期特選班 的日子＋時間另存到 Netlify 雲端資料庫，確保能可靠記錄與回讀。
+        if (countSP > 0) {
+            return fetch(SP_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, gender: gender, grade: grade, total: total, count: countSP, detail: arrSP })
+            }).catch(err => logDebug("特選班資料雲端保存失敗：" + err.message, true));
+        }
+    })
+    .then(() => {
         alert(`🎉 【${name}】暑期課程報名及選課登記成功！`);
         document.getElementById('stuName').value = '';
         document.getElementById('selCountA').value = "0";
@@ -676,29 +688,51 @@ function computeFullyAlignedSets(detailsValueA, detailsValueB, group, countA, co
 
 function refreshFromSheets() {
     logDebug("正在從雲端數據庫加載最新名冊與總額...", false);
-    cloudRecords = []; 
-    fetch(scriptURL)
-    .then(res => res.json())
-    .then(data => {
-        logDebug("成功讀取雲端！資料總筆數：" + data.length, false);
-        data.forEach(item => {
+    cloudRecords = [];
+    Promise.all([
+        fetch(scriptURL).then(res => res.json()).catch(() => []),
+        fetch(SP_API).then(res => res.json()).catch(() => [])
+    ])
+    .then(([data, spData]) => {
+        logDebug("成功讀取雲端！資料總筆數：" + (Array.isArray(data) ? data.length : 0), false);
+        (Array.isArray(data) ? data : []).forEach(item => {
             cloudRecords.push({
-                name: String(item.name || item.姓名 || "").trim(), 
-                gender: String(item.gender || item.性別 || "").trim(), 
+                name: String(item.name || item.姓名 || "").trim(),
+                gender: String(item.gender || item.性別 || "").trim(),
                 gradeText: String(item.gradeText || item.年級 || "").trim(),
-                total: String(item.total || item.總額 || "0").trim(), 
-                countA: String(item.A堂數 || item.countA || "0").trim(), 
+                total: String(item.total || item.總額 || "0").trim(),
+                countA: String(item.A堂數 || item.countA || "0").trim(),
                 countB: String(item.B堂數 || item.countB || "0").trim(),
-                detailsA: String(item.詳細日期A || item.detailsA || "").trim(), 
-                detailsB: String(item.詳細日期B || item.detailsB || "").trim(), 
+                detailsA: String(item.詳細日期A || item.detailsA || "").trim(),
+                detailsB: String(item.詳細日期B || item.detailsB || "").trim(),
                 hasPartC: String(item.PartC || item.hasPartC || "否").trim(),
                 countSP: String(item.特選堂數 || item.countSP || "0").trim(),
                 timestamp: String(item.timestamp || item.登記時間 || "").trim()
             });
         });
+        mergeSPRecords(Array.isArray(spData) ? spData : []);
         renderStats(cloudRecords); renderAdminTable(cloudRecords);
     })
     .catch(err => logDebug("加載失敗原因：" + err.message, true));
+}
+
+// ✨ 把 Netlify 雲端資料庫的特選班排課（日子＋時間）合併進名冊：
+// 同名學生直接覆蓋其特選堂數明細；若試算表沒有該學生，則以資料庫資料補上一筆。
+function mergeSPRecords(spData) {
+    spData.forEach(sp => {
+        const nm = String(sp.name || "").trim(); if (!nm) return;
+        const detail = String(sp.detail || "").trim() || String(sp.lesson_count || "0");
+        const existing = cloudRecords.find(r => r.name === nm);
+        if (existing) {
+            existing.countSP = detail;
+        } else {
+            cloudRecords.push({
+                name: nm, gender: String(sp.gender || "").trim(), gradeText: String(sp.grade || "").trim(),
+                total: String(sp.total || "0").trim(), countA: "0", countB: "0",
+                detailsA: "", detailsB: "", hasPartC: "否", countSP: detail, timestamp: ""
+            });
+        }
+    });
 }
 
 function renderStats(records) {
@@ -753,7 +787,10 @@ function deleteEntireRecord(index) {
     const r = cloudRecords[index]; if (!r) return;
     if (confirm(`⚠️ 確定要刪除學生【${r.name}】的紀錄嗎？`)) {
         const btn = document.getElementById("delBtn_" + index); if(btn) btn.innerText = "⏳...";
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete_record', name: r.name }) })
+        Promise.all([
+            fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete_record', name: r.name }) }),
+            fetch(SP_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', name: r.name }) }).catch(() => {})
+        ])
         .then(() => { alert("🎉 刪除成功。"); refreshFromSheets(); });
     }
 }

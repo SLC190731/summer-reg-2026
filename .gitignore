@@ -1,0 +1,5 @@
+# Local Netlify folder
+.netlify
+
+# Node dependencies (installed automatically on Netlify deploy)
+node_modules
