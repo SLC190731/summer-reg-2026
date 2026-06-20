@@ -155,7 +155,7 @@
                 <option value="16">16 堂</option>
                 <option value="20">20 堂</option>
             </select>
-            <p style="font-size:13px; margin:6px 0 0; color:#00695c;">自選整點開始上課（開放 10:00–17:00），小學 $190／堂、中學 $210／堂。</p>
+            <p style="font-size:13px; margin:6px 0 0; color:#00695c;">自選整點開始上課（開放 10:00–15:00），小學 $190／堂、中學 $210／堂。</p>
         </div>
 
         <div class="result-box">
@@ -530,14 +530,15 @@ function buildSplitRegistrationCalendars() {
     }
 }
 
-// ✨ 暑期特選班 專屬月曆：每個可選日子配一個整點開始時間（10:00–17:00），選滿指定堂數即可。
+// ✨ 暑期特選班 專屬月曆：每個可選日子配一個整點開始時間（10:00–15:00），選滿指定堂數即可。
 function buildSPRegistrationCalendar() {
     const container = document.getElementById('calContainerSP');
     if (!container) return;
     container.innerHTML = '';
     if (targetCountSP <= 0) return;
 
-    const HOUR_OPTIONS = [10, 11, 12, 13, 14, 15, 16, 17];
+    // 特選課程開班時間只設 10:00–15:00；16:00 及 17:00 不設開堂。
+    const HOUR_OPTIONS = [10, 11, 12, 13, 14, 15];
 
     Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
         let title = document.createElement('div'); title.className = 'month-section-title'; title.innerText = "2026年 " + m + "月 - 暑期特選班 可選日期"; container.appendChild(title);
@@ -893,9 +894,24 @@ function generateDailyBoardHtml() {
                     else if (currentDailyViewTab === 'BPM' && aligned.setB.has(cl) && (g.includes('一') || g.includes('三') || aligned.setB.has(cl) || g.includes('四') || g.includes('中') || g.includes('1') || g.includes('3') || g.includes('4'))) { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#FFF3E0;color:#E65100;border-left-color:#FF9800;'> " + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span></span>"; }
                     else if (currentDailyViewTab === 'SP') { let spSlot = parseSPData(r.countSP).slots.find(s => s.cl === cl); if (spSlot) { count++; tags += "<span class='cal-student-tag' style='background:#E0F2F1;color:#004D40;border-left-color:#00897B;'> " + r.name + " <span>(" + g.replace('升','') + " / " + (spSlot.time || "整點") + ")</span></span>"; } }
                 });
+                // ✨ 暑期特選班 學生按日子融合進 Part A／Part B 上午／Part B 下午 點名板，
+                //    讓導師一眼看到當天同場會出現的特選班學生及其開始時間。
+                let spCount = 0; let spTags = "";
+                if (currentDailyViewTab !== 'SP') {
+                    cloudRecords.forEach(r => {
+                        let spSlot = parseSPData(r.countSP).slots.find(s => s.cl === cl);
+                        if (spSlot) { spCount++; let g = r.gradeText || ""; spTags += "<span class='cal-student-tag' style='background:#E0F2F1;color:#004D40;border-left-color:#00897B;'>✨ " + r.name + " <span>(特選 " + g.replace('升','') + " / " + (spSlot.time || "整點") + ")</span></span>"; }
+                    });
+                }
                 let isH = (SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl) && SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl).h);
                 if (cl === "08/07") { htmlContent += "<span style='color:#E5989B;font-weight:bold;'>中心不開放</span>"; }
-                else if (isH) { htmlContent += "<span style='color:#E5989B;font-weight:bold;'>紅日假期</span>"; } else if(count > 0) { htmlContent += "<span style='color:#0288D1;font-weight:bold;font-size:11px;'>應到: " + count + " 人</span>" + tags; } else { htmlContent += "<span style='color:#ccc;'>無學生上課</span>"; }
+                else if (isH) { htmlContent += "<span style='color:#E5989B;font-weight:bold;'>紅日假期</span>"; }
+                else if (count > 0 || spCount > 0) {
+                    let headLine = "";
+                    if (count > 0) headLine += "應到: " + count + " 人";
+                    if (spCount > 0) headLine += (count > 0 ? " ＋ " : "") + "✨特選 " + spCount + " 人";
+                    htmlContent += "<span style='color:#0288D1;font-weight:bold;font-size:11px;'>" + headLine + "</span>" + tags + spTags;
+                } else { htmlContent += "<span style='color:#ccc;'>無學生上課</span>"; }
                 htmlContent += "</div>";
             }
         });
