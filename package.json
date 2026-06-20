@@ -1,0 +1,10 @@
+{
+  "name": "summer-reg-2026",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "暑期課程報名系統（含暑期特選班自選課堂的雲端記錄）",
+  "dependencies": {
+    "@netlify/database": "^1.0.0"
+  }
+}

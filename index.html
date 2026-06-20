@@ -26,6 +26,8 @@
         .day .sub-tag { font-size: 11px; color: #666; margin-top: 4px; line-height: 1.2; font-weight: bold; }
         .day.selected-a { background: #E4F2E6 !important; border: 2px solid #2e7d32 !important; color: #1b5e20; font-weight: bold; }
         .day.selected-b { background: #FFF3E0 !important; border: 2px solid #e67e22 !important; color: #b55d00; font-weight: bold; }
+        .day.selected-sp { background: #E0F2F1 !important; border: 2px solid #00897b !important; color: #004d40; font-weight: bold; }
+        .sp-hour-select { margin-top: 6px; padding: 4px; font-size: 12px; width: 100%; }
         .day.holiday { background: #F8EDEB !important; cursor: not-allowed; opacity: 0.5; }
         
         .result-box { background: #F0F4F0; padding: 20px; border-radius: 12px; border-left: 10px solid #8FA998; margin-top: 15px; }
@@ -74,8 +76,22 @@
         @media print {
             .container, .no-print, .btn, .btn-admin-entrance, .reschedule-btn-group, .view-tab-container, #debugConsole { display: none !important; }
             body { background: white !important; }
-            #parentNoticeModal { display: block !important; position: static !important; background: white !important; width: 100% !important; height: auto !important; }
             .modal-content { border:none !important; padding:0 !important; width:100% !important; height:auto !important; overflow:visible !important; }
+            /* 列印通知書：只展開家長個人月曆通知書 */
+            body.printing-notice #parentNoticeModal { display: block !important; position: static !important; background: white !important; width: 100% !important; height: auto !important; }
+            /* 一鍵列印：只展開導師點名看板（目前檢視的分頁） */
+            body.printing-daily #dailyListModal { display: block !important; position: static !important; background: white !important; width: 100% !important; height: auto !important; }
+
+            /* 點名日曆列印：強制橫向，每個星期獨立一頁，整個星期所有課堂壓縮顯示於同一頁 */
+            @page dailyLandscape { size: landscape; margin: 8mm; }
+            body.printing-daily #dailyListModal { page: dailyLandscape; }
+            body.printing-daily .daily-week-block { page: dailyLandscape; break-inside: avoid; page-break-inside: avoid; break-after: page; page-break-after: always; }
+            body.printing-daily .daily-week-block:last-child { break-after: auto; page-break-after: auto; }
+            body.printing-daily .daily-week-block .month-section-title { font-size: 1.1em; margin-top: 0; }
+            body.printing-daily .daily-week-block .calendar-grid { gap: 4px; margin-top: 6px; }
+            body.printing-daily .daily-week-block .cal-box-day { min-height: 0 !important; padding: 4px; font-size: 10px; }
+            body.printing-daily .daily-week-block .cal-box-day b { font-size: 11px; }
+            body.printing-daily .daily-week-block .cal-student-tag { font-size: 9px; padding: 2px 3px; margin-bottom: 2px; line-height: 1.2; }
         }
     </style>
 </head>
@@ -139,6 +155,21 @@
                 <option value="否">不參加 Part C 成長之旅 ($0)</option>
                 <option value="是">參加 Part C 成長之旅 (套裝折扣連動計費)</option>
             </select>
+
+            <label style="font-weight:bold; color:#00897b; margin-top:15px; display:block;">✨ 暑期特選班 自選課堂 (加購項目)：</label>
+            <select id="selCountSP" onchange="calculateLiveRegistrationPrice()">
+                <option value="0">不參加 暑期特選班 ($0)</option>
+                <option value="2">2 堂</option>
+                <option value="4">4 堂</option>
+                <option value="6">6 堂</option>
+                <option value="8">8 堂</option>
+                <option value="10">10 堂</option>
+                <option value="12">12 堂</option>
+                <option value="14">14 堂</option>
+                <option value="16">16 堂</option>
+                <option value="20">20 堂</option>
+            </select>
+            <p style="font-size:13px; margin:6px 0 0; color:#00695c;">自選整點開始上課（開放 10:00–15:00，每堂 2 小時），小學 $380／堂、中學 $420／堂。<b style="color:#c0392b;">特選班費用須全數繳付，不設分期。</b></p>
         </div>
 
         <div class="result-box">
@@ -146,6 +177,7 @@
             <p style="margin:5px 0;">已選 Part A 組合：<span id="liveCountA" style="font-weight:bold;color:#2e7d32;">0</span> 堂 <span id="liveFeeDetailA" style="color:#2e7d32; font-weight:bold; margin-left:10px;">($0)</span></p>
             <p style="margin:5px 0;">已選 Part B 組合：<span id="liveCountB" style="font-weight:bold;color:#e67e22;">0</span> 堂 <span id="liveFeeDetailB" style="color:#e67e22; font-weight:bold; margin-left:10px;">($0)</span></p>
             <p style="margin:5px 0;">加購 Part C 項目：<span id="liveCountC" style="font-weight:bold;color:#9c27b0;">否</span> <span id="liveFeeDetailC" style="color:#9c27b0; font-weight:bold; margin-left:10px;"></span></p>
+            <p style="margin:5px 0;">加購 暑期特選班：<span id="liveCountSP" style="font-weight:bold;color:#00897b;">0</span> 堂 <span id="liveFeeDetailSP" style="color:#00897b; font-weight:bold; margin-left:10px;"></span></p>
             <p style="margin:5px 0; font-size:1.3em; font-weight:bold; color:#d35400; border-top:1px dashed #ccc; padding-top:10px;">核實學費總額：$<span id="liveTotalAmount">0</span></p>
             <p style="margin:5px 0; font-size:1.2em; font-weight:bold; color:#2980b9;" id="liveInstallmentBox">分期費用：每期 $0 / 6期</p>
         </div>
@@ -173,6 +205,12 @@
             <div class="section" id="calContainerB"></div>
         </div>
 
+        <div id="partSP_ContainerBlock" style="margin-top:20px;">
+            <div class="part-header-title" style="background:#00897b;">✨ 暑期特選班 自選課堂選課區（揀日子 ＋ 開始時間）</div>
+            <div id="progBoxSP" class="progress-header-sticky" style="color:#00897b; border-color:#00897b;">暑期特選班 選課進度：0 / 0 堂</div>
+            <div class="section" id="calContainerSP"></div>
+        </div>
+
         <button class="btn" style="background:#b55d00; margin-bottom:50px; font-size:1.3em;" onclick="submitRegistrationForm()">🚀 確認日期無誤，正式提交報名資料至雲端</button>
     </div>
 
@@ -190,7 +228,7 @@
         <table class="admin-table" id="recordTable">
             <thead>
                 <tr>
-                    <th>姓名 (點擊彈出個人月曆)</th><th>年級</th><th>性別</th><th>總額</th><th>A堂數</th><th>B堂數</th><th>Part C</th><th>登記時間</th><th class="no-print" style="color:#d9534f;">行政控制</th>
+                    <th>姓名 (點擊彈出個人月曆)</th><th>年級</th><th>性別</th><th>課堂總額</th><th>折扣優惠</th><th>A堂數</th><th>B堂數</th><th>Part C</th><th>特選堂數</th><th>備註</th><th>登記時間</th><th class="no-print" style="color:#d9534f;">行政控制</th>
                 </tr>
             </thead>
             <tbody></tbody>
@@ -198,12 +236,16 @@
     </div>
 </div>
 
-<div id="parentNoticeModal"><div class="modal-content"><div style="text-align:center; border-bottom:3px solid #4A6D8C; padding-bottom:10px; margin-bottom:15px;"><h2 style="color:#4A6D8C; margin:0;" id="noticeStuName">學生上課月曆通知書</h2></div><div id="rescheduleNoticeBar" class="no-print" style="background:#FFF3CD; padding:12px; border-radius:8px; font-size:14px; border-left:5px solid #e67e22; color:#d35400; margin-bottom:15px; font-weight:bold;">💡 <b>直覺調堂：</b>點擊格子右下角 <b>🔄調堂</b>，點擊黃格子完成調堂。</div><div id="noticeCalendarContainer" onclick="handleCalendarContainerClick(event)"></div><div class="result-box"><p>學費分期：每期 $<span id="noticeInst">0</span> / 6期</p></div><div class="no-print" style="display:flex; gap:10px; margin-top:20px;"><button class="btn" style="background:#0288D1;" onclick="window.print()">🖨 列印通知書</button><button class="btn" style="background:#795548;" onclick="cancelRescheduleMode(); document.getElementById('parentNoticeModal').style.display='none';">關閉</button></div></div></div>
-<div id="dailyListModal"><div class="modal-content"><div style="display:flex; justify-content: space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:10px;"><h3 style="margin:0;">📅 導師專用：暑期每日上課名單看板</h3><button class="btn" style="background:#795548; width:auto; margin:0;" onclick="document.getElementById('dailyListModal').style.display='none';">關閉</button></div><div class="view-tab-container no-print" style="margin-top:15px;"><button id="tabAllA" class="tab-btn active" onclick="switchDailyView('AllA')">☀️ 全體 Part A 名單</button><button id="tabBAM" class="tab-btn" onclick="switchDailyView('BAM')">☀️ Part B 上午班 (P2, P5, P6)</button><button id="tabBPM" class="tab-btn" onclick="switchDailyView('BPM')">🌙 Part B 下午班 (P1, P3, P4, 中學)</button></div><div id="dailyMonthContainer"></div></div></div>
+<div id="parentNoticeModal"><div class="modal-content"><div style="text-align:center; border-bottom:3px solid #4A6D8C; padding-bottom:10px; margin-bottom:15px;"><h2 style="color:#4A6D8C; margin:0;" id="noticeStuName">學生上課月曆通知書</h2></div><div id="rescheduleNoticeBar" class="no-print" style="background:#FFF3CD; padding:12px; border-radius:8px; font-size:14px; border-left:5px solid #e67e22; color:#d35400; margin-bottom:15px; font-weight:bold;">💡 <b>直覺調堂：</b>點擊格子右下角 <b>🔄調堂</b>，點擊黃格子完成調堂。</div><div id="noticeCalendarContainer" onclick="handleCalendarContainerClick(event)"></div><div id="noticeRemarkBox" style="display:none; background:#FFF8E1; border-left:6px solid #F9A825; padding:14px 16px; border-radius:8px; margin-top:15px; font-size:15px; color:#6d4c41;"><b>📝 導師備註：</b><span id="noticeRemarkText"></span></div><div class="result-box"><p style="margin:4px 0;">課堂總額：$<span id="noticeTotal">0</span></p><p style="margin:4px 0; color:#c0392b;">折扣優惠：-$<span id="noticeDiscount">0</span></p><p style="margin:4px 0; font-weight:bold;">折扣後應繳總額：$<span id="noticeNet">0</span></p><p style="margin:4px 0;">學費分期：每期 $<span id="noticeInst">0</span> / 6期</p></div><div class="no-print" style="display:flex; gap:10px; margin-top:20px;"><button class="btn" style="background:#0288D1;" onclick="printNotice()">🖨 列印通知書</button><button class="btn" style="background:#795548;" onclick="cancelRescheduleMode(); document.getElementById('parentNoticeModal').style.display='none';">關閉</button></div></div></div>
+<div id="dailyListModal"><div class="modal-content"><div style="display:flex; justify-content: space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:10px;"><h3 style="margin:0;">📅 導師專用：暑期每日上課名單看板</h3><div style="display:flex; gap:10px;"><button class="btn no-print" style="background:#0288D1; width:auto; margin:0;" onclick="printDailyBoard()">🖨 一鍵列印</button><button class="btn no-print" style="background:#795548; width:auto; margin:0;" onclick="document.getElementById('dailyListModal').style.display='none';">關閉</button></div></div><div class="view-tab-container no-print" style="margin-top:15px;"><button id="tabAllA" class="tab-btn active" onclick="switchDailyView('AllA')">☀️ 全體 Part A 名單</button><button id="tabBAM" class="tab-btn" onclick="switchDailyView('BAM')">☀️ Part B 上午班 (P2, P5, P6)</button><button id="tabBPM" class="tab-btn" onclick="switchDailyView('BPM')">🌙 Part B 下午班 (P1, P3, P4, 中學)</button><button id="tabSP" class="tab-btn" onclick="switchDailyView('SP')">✨ 暑期特選班</button></div><div id="dailyMonthContainer"></div></div></div>
 
 <script>
-const scriptURL = 'https://script.google.com/macros/s/AKfycbytG9-GmPKQnHUazB0Lm6YyzE0plxtwrnz0BLUxL6xZ4FKE1qyon0AaMZ2qG3xuJ1oz/exec'; 
-const ADMIN_PASSWORD_KEY = "skylar2026"; 
+const scriptURL = 'https://script.google.com/macros/s/AKfycbytG9-GmPKQnHUazB0Lm6YyzE0plxtwrnz0BLUxL6xZ4FKE1qyon0AaMZ2qG3xuJ1oz/exec';
+// ✨ 暑期特選班 排課資料改存於 Netlify Database（我們可控的雲端），確保日子＋時間能被寫入與回讀。
+const SP_API = '/.netlify/functions/sp';
+// 💰 折扣優惠／備註同樣改存於 Netlify Database：避免外部試算表整行覆寫洗掉已選日子，並確保可靠保存與回讀。
+const OVERRIDES_API = '/.netlify/functions/overrides';
+const ADMIN_PASSWORD_KEY = "skylar2026";
 
 let cloudRecords = [];
 let currentDailyViewTab = 'AllA';
@@ -212,8 +254,10 @@ let rescheduleActiveState = { isMode: false, oldDate: null, partType: null };
 
 let targetCountA = 0;
 let targetCountB = 0;
+let targetCountSP = 0;
 let selectedRegDatesA = new Set();
 let selectedRegDatesB = new Set();
+let selectedRegSPSlots = {};
 
 const GRADE_ORDER = { "升小一":1, "升小二":2, "升小三":3, "升小四":4, "升小五":5, "升小六":6, "升中一或以上":7 };
 
@@ -234,36 +278,36 @@ const FULL_CALENDAR_AXIS = {
 // 🌟 物理對齊簡章：徹底修正 SCHEDULE_MASTER 中所有的殘留錯字，確保星期四、五科目完全校正不偏移！
 const SCHEDULE_MASTER = {
     p1p3p6: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(four)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語"},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        A: [{d:"06/22(一)",s:"英閱"},{d:"06/23(二)",s:"中閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"成語+Happy Friday"},{d:"06/29(一)",s:"詞語+標點"},{d:"06/30(二)",s:"英語體驗"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"數學+Happy Friday"},{d:"07/06(一)",s:"中閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中作"},{d:"07/09(四)",s:"中作"},{d:"07/10(五)",s:"中作+Happy Friday"},{d:"07/13(一)",s:"英語體驗"},{d:"07/14(二)",s:"英閱"},{d:"07/15(三)",s:"英作"},{d:"07/16(四)",s:"英作"},{d:"07/17(五)",s:"英作+Happy Friday"}],
         B: [
             {d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(四)",s:"英文"},{d:"07/24(五)",s:"英文"},
-            {d:"07/27(一)",s:"英作"},{d:"07/28(二)",s:"英作"},{d:"07/29(三)",s:"英作"},{d:"07/30(四)",s:"英作"},{d:"07/31(五)",s:"英作"},
+            {d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英作"},{d:"07/29(三)",s:"英作"},{d:"07/30(四)",s:"英作"},{d:"07/31(五)",s:"英作"},
             {d:"08/03(一)",s:"中作"},{d:"08/04(二)",s:"中作"},{d:"08/05(三)",s:"中作"},{d:"08/06(四)",s:"中作"},{d:"08/07(五)",s:"中心不開放",c:true},
             {d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"中文"},{d:"08/14(五)",s:"中文"},
             {d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"數學"},{d:"08/21(五)",s:"數學"},
-            {d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(four)",s:"常識"},{d:"08/28(五)",s:"常識"}
+            {d:"08/24(一)",s:"常識"},{d:"08/25(二)",s:"常識"},{d:"08/26(三)",s:"常識"},{d:"08/27(四)",s:"常識"},{d:"08/28(五)",s:"常識"}
         ]
     },
     p4p5: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語"},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        A: [{d:"06/22(一)",s:"英閱"},{d:"06/23(二)",s:"中閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"成語+Happy Friday"},{d:"06/29(一)",s:"詞語+標點"},{d:"06/30(二)",s:"英語體驗"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"數學+Happy Friday"},{d:"07/06(一)",s:"中閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中作"},{d:"07/09(四)",s:"中作"},{d:"07/10(五)",s:"中作+Happy Friday"},{d:"07/13(一)",s:"英語體驗"},{d:"07/14(二)",s:"英閱"},{d:"07/15(三)",s:"英作"},{d:"07/16(四)",s:"英作"},{d:"07/17(五)",s:"英作+Happy Friday"}],
         B: [
-            {d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中模"},{d:"07/24(五)",s:"中解"},
-            {d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英模"},{d:"07/31(五)",s:"英解"},
+            {d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中文"},{d:"07/24(五)",s:"模擬考試"},
+            {d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英文"},{d:"07/31(五)",s:"模擬考試"},
             {d:"08/03(一)",s:"中作"},{d:"08/04(二)",s:"中作"},{d:"08/05(三)",s:"英作"},{d:"08/06(四)",s:"英作"},{d:"08/07(五)",s:"中心不開放",c:true},
-            {d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數模"},{d:"08/14(五)",s:"數解"},
-            {d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人模"},{d:"08/21(五)",s:"人解"},
-            {d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科模"},{d:"08/28(五)",s:"科解"}
+            {d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數學"},{d:"08/14(五)",s:"模擬考試"},
+            {d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人文"},{d:"08/21(五)",s:"模擬考試"},
+            {d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"模擬考試"}
         ]
     },
     secondary: {
-        A: [{d:"06/22(一)",s:"英閱"},{d:"06/23(二)",s:"中閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"歷史"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中作"},{d:"07/09(四)",s:"中作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言解讀"},{d:"07/14(二)",s:"英閱"},{d:"07/15(三)",s:"英作"},{d:"07/16(四)",s:"英作"},{d:"07/17(五)",s:"Happy Fri"}],
+        A: [{d:"06/22(一)",s:"英閱"},{d:"06/23(二)",s:"中閱"},{d:"06/24(三)",s:"數學"},{d:"06/25(四)",s:"數學"},{d:"06/26(五)",s:"數學+Happy Friday"},{d:"06/29(一)",s:"科學實驗 歷史故事"},{d:"06/30(二)",s:"科學實驗 歷史故事"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"數學+Happy Friday"},{d:"07/06(一)",s:"中閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中作"},{d:"07/09(四)",s:"中作"},{d:"07/10(五)",s:"中作+Happy Friday"},{d:"07/13(一)",s:"文言文解讀"},{d:"07/14(二)",s:"文言文解讀"},{d:"07/15(三)",s:"英作"},{d:"07/16(四)",s:"英作"},{d:"07/17(五)",s:"英作+Happy Friday"}],
         B: [
             {d:"07/20(一)",s:"中文週"},{d:"07/21(二)",s:"中文週"},{d:"07/22(三)",s:"中文週"},{d:"07/23(四)",s:"中文週"},{d:"07/24(五)",s:"中文週"},
-            {d:"07/27(一)",s:"英文週"},{d:"07/28(二)",s:"英文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},
+            {d:"07/27(一)",s:"中文週"},{d:"07/28(二)",s:"中文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},
             {d:"08/03(一)",s:"英文週"},{d:"08/04(二)",s:"英文週"},{d:"08/05(三)",s:"英文週"},{d:"08/06(四)",s:"英文週"},{d:"08/07(五)",s:"中心不開放",c:true},
-            {d:"08/10(一)",s:"中史"},{d:"08/11(二)",s:"中史"},{d:"08/12(三)",s:"中史"},{d:"08/13(四)",s:"中史"},{d:"08/14(五)",s:"地理"},
+            {d:"08/10(一)",s:"中史+地理"},{d:"08/11(二)",s:"中史+地理"},{d:"08/12(三)",s:"中史+地理"},{d:"08/13(四)",s:"中史+地理"},{d:"08/14(五)",s:"中史+地理"},
             {d:"08/17(一)",s:"數學週"},{d:"08/18(二)",s:"數學週"},{d:"08/19(三)",s:"數學週"},{d:"08/20(四)",s:"數學週"},{d:"08/21(五)",s:"數學週"},
-            {d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(four)",s:"科學"},{d:"08/28(五)",s:"西史"}
+            {d:"08/24(一)",s:"科學+西史"},{d:"08/25(二)",s:"科學+西史"},{d:"08/26(三)",s:"科學+西史"},{d:"08/27(四)",s:"科學+西史"},{d:"08/28(五)",s:"科學+西史"}
         ]
     }
 };
@@ -273,6 +317,32 @@ function cleanDateStr(str) {
     let match = s.match(/(\d{1,2})\/(\d{1,2})/);
     if(match) return match[1].padStart(2, '0') + "/" + match[2].padStart(2, '0');
     return s.substring(0, 5);
+}
+
+// 取得時間軸上某日子的完整標籤（含星期），供暑期特選班記錄日子+時間使用
+function findAxisLabel(cl) {
+    for (const m in FULL_CALENDAR_AXIS) {
+        for (const c of FULL_CALENDAR_AXIS[m]) {
+            if (c.type === 'data' && cleanDateStr(c.d) === cl) return c.d;
+        }
+    }
+    return cl;
+}
+
+// 解析「特選堂數」欄（K欄）：可能是純數字（舊資料）或「日子+時間」明細字串（新資料）
+function parseSPData(raw) {
+    let s = String(raw || "").trim();
+    if (!s || s === "0") return { count: 0, slots: [] };
+    if (/\d{1,2}\/\d{1,2}/.test(s)) {
+        let slots = s.split(",").map(p => p.trim()).filter(Boolean).map(p => {
+            let dm = p.match(/(\d{1,2}\/\d{1,2})/);
+            let tm = p.match(/(\d{1,2}:\d{2})/);
+            return { cl: dm ? cleanDateStr(dm[1]) : "", time: tm ? tm[1] : "", label: p };
+        }).filter(x => x.cl);
+        return { count: slots.length, slots: slots };
+    }
+    let n = Number(s.replace(/[^0-9]/g, '')) || 0;
+    return { count: n, slots: [] };
 }
 
 function verifyAdminLogin() {
@@ -296,59 +366,93 @@ function calculateLiveRegistrationPrice() {
     targetCountA = Number(document.getElementById('selCountA').value);
     targetCountB = Number(document.getElementById('selCountB').value);
     let isC = document.getElementById('selCountC').value;
+    let countSP = Number(document.getElementById('selCountSP').value);
     let grade = document.getElementById('stuGrade').value;
     let isSecondary = grade.includes("中") || grade.includes("以上") || grade.includes("7");
-    
+
     document.getElementById('liveCountA').innerText = targetCountA;
     document.getElementById('liveCountB').innerText = targetCountB;
     document.getElementById('liveCountC').innerText = isC;
-    
+    document.getElementById('liveCountSP').innerText = countSP;
+
     let priceA = 0; let priceB = 0; let priceC = 0;
     if (targetCountA === 12) priceA = isSecondary ? 2760 : 2520;
     else if (targetCountA === 16) priceA = isSecondary ? 3540 : 3240;
     else if (targetCountA === 19) priceA = isSecondary ? 4080 : 3780;
-    
+
     if (targetCountB === 20) priceB = isSecondary ? 10080 : 8880;
     else if (targetCountB === 24) priceB = isSecondary ? 11760 : 10320;
     else if (targetCountB === 29) priceB = isSecondary ? 13440 : 12150;
-    
+
     if (isC === "是") {
         if (targetCountB === 0) priceC = isSecondary ? 4900 : 4200;
         else if (targetCountB === 20) priceC = isSecondary ? 3120 : 3060;
         else if (targetCountB === 24) priceC = isSecondary ? 3000 : 2790;
         else if (targetCountB === 29) priceC = isSecondary ? 2940 : 2640;
     }
-    
+
+    // ✨ 暑期特選班：自選整點課堂（每堂 2 小時），小學 $380／堂、中學 $420／堂
+    let priceSP = countSP * (isSecondary ? 420 : 380);
+
     // 即時補上獨立項目金額標記
     document.getElementById('liveFeeDetailA').innerText = priceA > 0 ? `費用: $${priceA}` : `($0)`;
     document.getElementById('liveFeeDetailB').innerText = priceB > 0 ? `費用: $${priceB}` : `($0)`;
     document.getElementById('liveFeeDetailC').innerText = priceC > 0 ? `(加購費用: $${priceC})` : ``;
-    
-    let grandTotal = priceA + priceB + priceC;
+    document.getElementById('liveFeeDetailSP').innerText = priceSP > 0 ? `(加購費用: $${priceSP})` : ``;
+
+    let grandTotal = priceA + priceB + priceC + priceSP;
     document.getElementById('liveTotalAmount').innerText = grandTotal;
-    let instValue = Math.round(grandTotal / 6);
-    document.getElementById('liveInstallmentBox').innerText = `分期費用：每期 $${instValue} / 6期`;
+    // 特選班費用不接受分期，只就 Part A／B／C 計算每期金額；特選班費用須全數另繳。
+    let installBase = priceA + priceB + priceC;
+    let instValue = Math.round(installBase / 6);
+    let instText = `分期費用：每期 $${instValue} / 6期`;
+    if (priceSP > 0) instText += `（不含特選班 $${priceSP}，特選班須全數繳付）`;
+    document.getElementById('liveInstallmentBox').innerText = instText;
 }
 
 function goToCalendarPage() {
     const name = document.getElementById('stuName').value.trim();
     if(!name) { alert("❌ 請先填寫學生中文全名！"); return; }
-    
+
     targetCountA = Number(document.getElementById('selCountA').value);
     targetCountB = Number(document.getElementById('selCountB').value);
-    
+    const isC = document.getElementById('selCountC').value;
+    const countSP = Number(document.getElementById('selCountSP').value);
+    targetCountSP = countSP;
+
+    // 🛑 完全沒有選擇任何課程組合
+    if (targetCountA === 0 && targetCountB === 0 && isC !== "是" && countSP === 0) {
+        alert("❌ 請至少選擇 Part A、Part B、Part C 或 暑期特選班 其中一項課程！");
+        return;
+    }
+
+    // 🔮 只報名 Part C 成長之旅（無選課日子需求）：略過月曆，確認後直接提交。
+    // ✨ 暑期特選班 屬「日子＋時間」自選課堂，必須進入專屬月曆，故不在此略過之列。
+    if (targetCountA === 0 && targetCountB === 0 && countSP === 0 && isC === "是") {
+        selectedRegDatesA.clear();
+        selectedRegDatesB.clear();
+        selectedRegSPSlots = {};
+        if (confirm("您只報名了 🔮 Part C 3日2夜成長之旅（無需選擇上課日期），是否確認直接提交報名？")) {
+            submitRegistrationForm();
+        }
+        return;
+    }
+
     selectedRegDatesA.clear();
     selectedRegDatesB.clear();
-    
+    selectedRegSPSlots = {};
+
     document.getElementById('page1').classList.remove('active');
     document.getElementById('page2').classList.add('active');
-    document.getElementById('regLimitTip').innerText = `🎯 堂數指標提示：Part A 請選滿 ${targetCountA} 天，Part B 請選滿 ${targetCountB} 天。`;
-    
+    document.getElementById('regLimitTip').innerText = `🎯 堂數指標提示：Part A 請選滿 ${targetCountA} 天，Part B 請選滿 ${targetCountB} 天，暑期特選班 請選滿 ${targetCountSP} 堂（日子＋時間）。`;
+
     document.getElementById('partA_ContainerBlock').style.display = (targetCountA > 0) ? 'block' : 'none';
     document.getElementById('partB_ContainerBlock').style.display = (targetCountB > 0) ? 'block' : 'none';
-    
+    document.getElementById('partSP_ContainerBlock').style.display = (targetCountSP > 0) ? 'block' : 'none';
+
     updateRegistrationProgressBarUI();
     buildSplitRegistrationCalendars();
+    buildSPRegistrationCalendar();
 }
 
 function backToStepOne() {
@@ -359,6 +463,7 @@ function backToStepOne() {
 function updateRegistrationProgressBarUI() {
     document.getElementById('progBoxA').innerText = `Part A 選課進度：${selectedRegDatesA.size} / ${targetCountA} 堂`;
     document.getElementById('progBoxB').innerText = `Part B 選課進度：${selectedRegDatesB.size} / ${targetCountB} 堂`;
+    document.getElementById('progBoxSP').innerText = `暑期特選班 選課進度：${Object.keys(selectedRegSPSlots).length} / ${targetCountSP} 堂`;
 }
 
 function buildSplitRegistrationCalendars() {
@@ -445,25 +550,90 @@ function buildSplitRegistrationCalendars() {
     }
 }
 
+// ✨ 暑期特選班 專屬月曆：每個可選日子配一個整點開始時間（10:00–15:00），選滿指定堂數即可。
+function buildSPRegistrationCalendar() {
+    const container = document.getElementById('calContainerSP');
+    if (!container) return;
+    container.innerHTML = '';
+    if (targetCountSP <= 0) return;
+
+    // 特選課程開班時間只設 10:00–15:00；16:00 及 17:00 不設開堂。
+    const HOUR_OPTIONS = [10, 11, 12, 13, 14, 15];
+
+    Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
+        let title = document.createElement('div'); title.className = 'month-section-title'; title.innerText = "2026年 " + m + "月 - 暑期特選班 可選日期"; container.appendChild(title);
+        let weeksHeader = document.createElement('div'); weeksHeader.className = 'calendar-weeks-header';
+        weeksHeader.innerHTML = '<div>星期一</div><div>星期二</div><div>星期三</div><div>星期四</div><div>星期五</div>'; container.appendChild(weeksHeader);
+        let grid = document.createElement('div'); grid.className = 'calendar-grid';
+
+        FULL_CALENDAR_AXIS[m].forEach(cell => {
+            let box = document.createElement('div');
+            if (cell.type === "empty") { box.className = 'day holiday'; box.innerHTML = '-'; }
+            else {
+                let cl = cleanDateStr(cell.d); box.className = 'day';
+                if (cell.h) {
+                    box.classList.add('holiday'); box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag' style='color:#e5989b;'>紅日假期</div>";
+                } else if (cell.c || cl === "08/07") {
+                    box.classList.add('holiday'); box.innerHTML = "<b>" + cell.d + "</b><div class='sub-tag' style='color:#e5989b;'>中心不開放</div>";
+                } else {
+                    box.innerHTML = "<b>" + cell.d + "</b>";
+                    let sel = document.createElement('select'); sel.className = 'sp-hour-select';
+                    sel.innerHTML = "<option value=''>未選時間</option>" + HOUR_OPTIONS.map(h => `<option value='${String(h).padStart(2,'0')}:00'>${String(h).padStart(2,'0')}:00 開始</option>`).join('');
+                    if (selectedRegSPSlots[cl]) { sel.value = selectedRegSPSlots[cl]; box.classList.add('selected-sp'); }
+                    sel.onchange = () => {
+                        if (sel.value) {
+                            if (!selectedRegSPSlots[cl] && Object.keys(selectedRegSPSlots).length >= targetCountSP) {
+                                alert(`⚠️ 暑期特選班 已選滿 ${targetCountSP} 堂。`); sel.value = ''; return;
+                            }
+                            selectedRegSPSlots[cl] = sel.value; box.classList.add('selected-sp');
+                        } else { delete selectedRegSPSlots[cl]; box.classList.remove('selected-sp'); }
+                        updateRegistrationProgressBarUI();
+                    };
+                    box.appendChild(sel);
+                }
+            }
+            grid.appendChild(box);
+        });
+        container.appendChild(grid);
+    });
+}
+
 function submitRegistrationForm() {
+    const isC = document.getElementById('selCountC').value;
+    const countSP = Number(document.getElementById('selCountSP').value);
+    if(targetCountA === 0 && targetCountB === 0 && isC !== "是" && countSP === 0) { alert("❌ 請至少選擇 Part A、Part B、Part C 或 暑期特選班 其中一項課程！"); return; }
     if(targetCountA > 0 && selectedRegDatesA.size < targetCountA) { alert(`❌ 排課不完整：Part A 需要選滿 ${targetCountA} 堂。`); return; }
     if(targetCountB > 0 && selectedRegDatesB.size < targetCountB) { alert(`❌ 排課不完整：Part B 需要選滿 ${targetCountB} 堂。`); return; }
+    if(countSP > 0 && Object.keys(selectedRegSPSlots).length < countSP) { alert(`❌ 排課不完整：暑期特選班 需要選滿 ${countSP} 堂（每堂須揀日子及開始時間）。`); return; }
 
     const name = document.getElementById('stuName').value.trim();
     const gender = document.getElementById('stuGender').value;
     const grade = document.getElementById('stuGrade').value;
-    const isC = document.getElementById('selCountC').value;
     const total = document.getElementById('liveTotalAmount').innerText;
-    
+
     let arrA = Array.from(selectedRegDatesA).map(d => d + "(" + getWeekDaySymbol(d, 'A', grade) + ")").join(", ");
     let arrB = Array.from(selectedRegDatesB).map(d => d + "(" + getWeekDaySymbol(d, 'B', grade) + ")").join(", ");
-    
+    // ✨ 暑期特選班 明細：日子（含星期）＋ 開始時間，存入試算表 K 欄「特選堂數」
+    let arrSP = Object.keys(selectedRegSPSlots).map(cl => findAxisLabel(cl) + " " + selectedRegSPSlots[cl]).join(", ");
+
     logDebug("正在上傳表單，安全同步寫入雲端試算表...", false);
-    
+
+    const stamp = new Date().toLocaleString();
+    // 同時送出中文及英文鍵名別名，確保不論試算表標題用哪一種命名，每個欄位都能對應寫入。
     let payload = {
-        name: name, gender: gender, gradeText: grade, total: total,
-        A堂數: targetCountA, B堂數: targetCountB, PartC: isC,
-        timestamp: new Date().toLocaleString(), 詳細日期A: arrA, 詳細日期B: arrB
+        name: name, 姓名: name,
+        gender: gender, 性別: gender,
+        gradeText: grade, 年級: grade,
+        total: total, 總額: total,
+        A堂數: targetCountA, countA: targetCountA,
+        B堂數: targetCountB, countB: targetCountB,
+        PartC: isC, "Part C": isC, hasPartC: isC,
+        特選堂數: arrSP || String(countSP), countSP: countSP, 特選詳情: arrSP, detailsSP: arrSP,
+        詳細日期A: arrA, detailsA: arrA,
+        詳細日期B: arrB, detailsB: arrB,
+        折扣優惠: 0, 折扣: 0, discount: 0,
+        備註: "", remark: "",
+        timestamp: stamp, 登記時間: stamp
     };
 
     fetch(scriptURL, {
@@ -472,11 +642,25 @@ function submitRegistrationForm() {
         body: JSON.stringify(payload)
     })
     .then(() => {
+        // ✨ 暑期特選班 的日子＋時間另存到 Netlify 雲端資料庫，確保能可靠記錄與回讀。
+        if (countSP > 0) {
+            return fetch(SP_API, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, gender: gender, grade: grade, total: total, count: countSP, detail: arrSP })
+            }).catch(err => logDebug("特選班資料雲端保存失敗：" + err.message, true));
+        }
+    })
+    .then(() => {
         alert(`🎉 【${name}】暑期課程報名及選課登記成功！`);
         document.getElementById('stuName').value = '';
         document.getElementById('selCountA').value = "0";
         document.getElementById('selCountB').value = "0";
         document.getElementById('selCountC').value = "否";
+        document.getElementById('selCountSP').value = "0";
+        selectedRegDatesA.clear();
+        selectedRegDatesB.clear();
+        selectedRegSPSlots = {};
         calculateLiveRegistrationPrice();
         document.getElementById('page2').classList.remove('active');
         document.getElementById('page1').classList.add('active');
@@ -527,41 +711,86 @@ function computeFullyAlignedSets(detailsValueA, detailsValueB, group, countA, co
 
 function refreshFromSheets() {
     logDebug("正在從雲端數據庫加載最新名冊與總額...", false);
-    cloudRecords = []; 
-    fetch(scriptURL)
-    .then(res => res.json())
-    .then(data => {
-        logDebug("成功讀取雲端！資料總筆數：" + data.length, false);
-        data.forEach(item => {
+    cloudRecords = [];
+    Promise.all([
+        fetch(scriptURL).then(res => res.json()).catch(() => []),
+        fetch(SP_API).then(res => res.json()).catch(() => []),
+        fetch(OVERRIDES_API).then(res => res.json()).catch(() => [])
+    ])
+    .then(([data, spData, ovData]) => {
+        logDebug("成功讀取雲端！資料總筆數：" + (Array.isArray(data) ? data.length : 0), false);
+        (Array.isArray(data) ? data : []).forEach(item => {
             cloudRecords.push({
-                name: String(item.name || item.姓名 || "").trim(), 
-                gender: String(item.gender || item.性別 || "").trim(), 
+                name: String(item.name || item.姓名 || "").trim(),
+                gender: String(item.gender || item.性別 || "").trim(),
                 gradeText: String(item.gradeText || item.年級 || "").trim(),
-                total: String(item.total || item.總額 || "0").trim(), 
-                countA: String(item.A堂數 || item.countA || "0").trim(), 
+                total: String(item.total || item.總額 || "0").trim(),
+                countA: String(item.A堂數 || item.countA || "0").trim(),
                 countB: String(item.B堂數 || item.countB || "0").trim(),
-                detailsA: String(item.詳細日期A || item.detailsA || "").trim(), 
-                detailsB: String(item.詳細日期B || item.detailsB || "").trim(), 
+                detailsA: String(item.詳細日期A || item.detailsA || "").trim(),
+                detailsB: String(item.詳細日期B || item.detailsB || "").trim(),
                 hasPartC: String(item.PartC || item.hasPartC || "否").trim(),
+                countSP: String(item.特選堂數 || item.countSP || "0").trim(),
+                discount: String(item.折扣優惠 || item.折扣 || item.discount || "0").trim(),
+                remark: String(item.備註 || item.remark || "").trim(),
                 timestamp: String(item.timestamp || item.登記時間 || "").trim()
             });
         });
+        mergeSPRecords(Array.isArray(spData) ? spData : []);
+        mergeOverrides(Array.isArray(ovData) ? ovData : []);
         renderStats(cloudRecords); renderAdminTable(cloudRecords);
     })
     .catch(err => logDebug("加載失敗原因：" + err.message, true));
+}
+
+// ✨ 把 Netlify 雲端資料庫的特選班排課（日子＋時間）合併進名冊：
+// 同名學生直接覆蓋其特選堂數明細；若試算表沒有該學生，則以資料庫資料補上一筆。
+function mergeSPRecords(spData) {
+    spData.forEach(sp => {
+        const nm = String(sp.name || "").trim(); if (!nm) return;
+        const detail = String(sp.detail || "").trim() || String(sp.lesson_count || "0");
+        const existing = cloudRecords.find(r => r.name === nm);
+        if (existing) {
+            existing.countSP = detail;
+        } else {
+            cloudRecords.push({
+                name: nm, gender: String(sp.gender || "").trim(), gradeText: String(sp.grade || "").trim(),
+                total: String(sp.total || "0").trim(), countA: "0", countB: "0",
+                detailsA: "", detailsB: "", hasPartC: "否", countSP: detail, discount: "0", remark: "", timestamp: ""
+            });
+        }
+    });
+}
+
+// 💰 把 Netlify 雲端資料庫的折扣優惠／備註合併進名冊（以姓名為鍵，DB 為權威來源）。
+// 折扣與備註是貼附在既有學生紀錄上的資料，故只覆寫已存在的學生，不另建新紀錄。
+function mergeOverrides(ovData) {
+    ovData.forEach(o => {
+        const nm = String(o.name || "").trim(); if (!nm) return;
+        const existing = cloudRecords.find(r => r.name === nm);
+        if (existing) {
+            existing.discount = String(o.discount || "0").trim();
+            existing.remark = String(o.remark || "").trim();
+        }
+    });
 }
 
 function renderStats(records) {
     const statContainer = document.getElementById('statContainer'); if (!statContainer) return;
     let totalStudents = records.length; let totalMoney = 0; let countA = 0, countB = 0;
     let pBoy = 0, pGirl = 0, sBoy = 0, sGirl = 0;
-    
-    records.forEach(r => { 
-        totalMoney += Number(r.total.replace(/[^0-9]/g, '')) || 0; 
+    let countSPStudents = 0, countSPLessons = 0;
+
+    records.forEach(r => {
+        let gross = Number(r.total.replace(/[^0-9]/g, '')) || 0;
+        let disc = Number(String(r.discount || "0").replace(/[^0-9.]/g, '')) || 0;
+        totalMoney += Math.max(0, gross - disc);
         if(Number(r.countA) > 0) countA++; if(Number(r.countB) > 0) countB++;
+        let spInfo = parseSPData(r.countSP);
+        if(spInfo.count > 0) { countSPStudents++; countSPLessons += spInfo.count; }
         let isC = String(r.hasPartC).trim() === "是";
         if(isC) {
-            if(r.gradeText.includes("中") || r.gradeText.includes("F") || r.gradeText.includes("7")) { if(r.gender === "男") sBoy++; else sGirl++; } 
+            if(r.gradeText.includes("中") || r.gradeText.includes("F") || r.gradeText.includes("7")) { if(r.gender === "男") sBoy++; else sGirl++; }
             else { if(r.gender === "男") pBoy++; else pGirl++; }
         }
     });
@@ -574,20 +803,34 @@ function renderStats(records) {
         <div class="stat-badge" style="background:#e91e63;">Part C 小學女：${pGirl} 人</div>
         <div class="stat-badge" style="background:#34495e;">Part C 中學男：${sBoy} 人</div>
         <div class="stat-badge" style="background:#9c27b0;">Part C 中學女：${sGirl} 人</div>
+        <div class="stat-badge" style="background:#00897b;">暑期特選班：${countSPStudents} 人 / 共 ${countSPLessons} 堂</div>
     `;
 }
 
 function renderAdminTable(records) {
     records.sort((a, b) => (GRADE_ORDER[a.gradeText] || 99) - (GRADE_ORDER[b.gradeText] || 99));
     const tbody = document.querySelector('#recordTable tbody'); if(!tbody) return; tbody.innerHTML = '';
-    records.forEach((r, index) => { 
+    records.forEach((r, index) => {
+        let spInfo = parseSPData(r.countSP);
+        let spCell = spInfo.count > 0 ? (spInfo.count + " 堂") : "0";
+        let spTitle = spInfo.slots.map(s => s.label).join(" / ");
+        let discNum = Number(String(r.discount || "0").replace(/[^0-9.]/g, '')) || 0;
+        let discCell = discNum > 0 ? ("<span style='color:#c0392b;font-weight:bold;'>-$" + discNum + "</span>") : "—";
+        let remarkText = r.remark ? r.remark : "";
+        let remarkCell = remarkText ? ("<span style='color:#6d4c41;'>" + remarkText + "</span>") : "<span style='color:#bbb;'>—</span>";
         tbody.innerHTML += "<tr>" +
             "<td class='clickable-name' onclick='triggerNoticeFromAdmin(" + index + ")'>" + r.name + "</td>" +
             "<td>" + r.gradeText + "</td><td>" + r.gender + "</td><td>$" + r.total + "</td>" +
+            "<td>" + discCell + "</td>" +
             "<td>" + r.countA + "</td><td>" + r.countB + "</td><td>" + r.hasPartC + "</td>" +
-            "<td>" + r.timestamp + "</td>" + 
-            "<td class='no-print'><button class='btn-delete-rec' id='delBtn_"+index+"' onclick='deleteEntireRecord(" + index + ")'>❌ 刪除</button></td>" +
-            "</tr>"; 
+            "<td title='" + spTitle + "'>" + spCell + "</td>" +
+            "<td style='max-width:160px; word-break:break-all; text-align:left;'>" + remarkCell + "</td>" +
+            "<td>" + r.timestamp + "</td>" +
+            "<td class='no-print' style='white-space:nowrap;'>" +
+                "<button class='btn-delete-rec' style='background:#0288D1; margin-right:4px;' onclick='editDiscountRemark(" + index + ")'>✏️ 折扣/備註</button>" +
+                "<button class='btn-delete-rec' id='delBtn_" + index + "' onclick='deleteEntireRecord(" + index + ")'>❌ 刪除</button>" +
+            "</td>" +
+            "</tr>";
     });
 }
 
@@ -595,9 +838,54 @@ function deleteEntireRecord(index) {
     const r = cloudRecords[index]; if (!r) return;
     if (confirm(`⚠️ 確定要刪除學生【${r.name}】的紀錄嗎？`)) {
         const btn = document.getElementById("delBtn_" + index); if(btn) btn.innerText = "⏳...";
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete_record', name: r.name }) })
+        Promise.all([
+            fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete_record', name: r.name }) }),
+            fetch(SP_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', name: r.name }) }).catch(() => {}),
+            fetch(OVERRIDES_API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', name: r.name }) }).catch(() => {})
+        ])
         .then(() => { alert("🎉 刪除成功。"); refreshFromSheets(); });
     }
+}
+
+// 💰 導師後台：為個別學生設定折扣優惠及文字備註，更新後寫回 Google 試算表並重新整理。
+function editDiscountRemark(index) {
+    const r = cloudRecords[index]; if (!r) return;
+    const grossNum = Number(String(r.total || "0").replace(/[^0-9.]/g, '')) || 0;
+    const curDisc = Number(String(r.discount || "0").replace(/[^0-9.]/g, '')) || 0;
+
+    let discInput = prompt(`💰 為【${r.name}】設定折扣優惠（請輸入折扣金額，單位：元）\n課堂總額：$${grossNum}\n（留空或 0 表示不設折扣）`, curDisc ? String(curDisc) : "");
+    if (discInput === null) return;
+    let discNum = Number(String(discInput).replace(/[^0-9.]/g, '')) || 0;
+    if (discNum < 0) discNum = 0;
+    if (discNum > grossNum) { alert(`⚠️ 折扣金額不可大於課堂總額 $${grossNum}。`); return; }
+
+    let remarkInput = prompt(`📝 為【${r.name}】設定備註（會顯示於學生個人日曆及點名日曆）\n（留空表示清除備註）`, r.remark || "");
+    if (remarkInput === null) return;
+    let remark = String(remarkInput).trim();
+
+    r.discount = String(discNum);
+    r.remark = remark;
+
+    // 寫入 Netlify 雲端資料庫（權威來源）。不再經外部試算表 update_record，
+    // 以免整行覆寫把該生已選的 Part A／Part B 日子洗掉。
+    fetch(OVERRIDES_API, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: r.name, discount: String(discNum), remark: remark })
+    })
+    .then(() => { alert(`🎉 已更新【${r.name}】的折扣優惠與備註（折扣後應繳 $${Math.max(0, grossNum - discNum)}）。`); refreshFromSheets(); })
+    .catch(err => alert("❌ 更新失敗：" + err.message));
+}
+
+// 🖨 列印：以 body class 控制只展開對應的月曆，避免兩個彈窗同時被印出。
+function printNotice() {
+    document.body.classList.add('printing-notice');
+    window.print();
+    document.body.classList.remove('printing-notice');
+}
+function printDailyBoard() {
+    document.body.classList.add('printing-daily');
+    window.print();
+    document.body.classList.remove('printing-daily');
 }
 
 function triggerNoticeFromAdmin(index) { currentEditingIndex = index; cancelRescheduleMode(); const r = cloudRecords[index]; buildParentNoticeCalendar(r.name, r.gradeText, r.total, r.detailsA, r.detailsB, Number(r.countA), Number(r.countB)); }
@@ -605,10 +893,28 @@ function triggerNoticeFromAdmin(index) { currentEditingIndex = index; cancelResc
 function buildParentNoticeCalendar(name, gradeText, total, arrA, arrB, countA, countB) {
     document.getElementById('parentNoticeModal').style.display = 'block';
     document.getElementById('noticeStuName').innerText = name + " (" + gradeText + ") 暑期上課月曆通知書";
-    document.getElementById('noticeInst').innerText = Math.round((Number(total.replace(/[^0-9]/g, '')) || 0) / 6);
+    // ✨ 暑期特選班 日子＋時間：由目前學生紀錄的「特選堂數」欄解析後標示於月曆
+    const spRec = (currentEditingIndex != null && cloudRecords[currentEditingIndex]) ? parseSPData(cloudRecords[currentEditingIndex].countSP) : { slots: [] };
+    const curRec = (currentEditingIndex != null && cloudRecords[currentEditingIndex]) ? cloudRecords[currentEditingIndex] : {};
+    // 特選班費用不接受分期：每期金額只就扣除特選班費（及折扣）後的學費計算。
+    const totalNum = Number(String(total).replace(/[^0-9]/g, '')) || 0;
+    const discountNum = Number(String(curRec.discount || "0").replace(/[^0-9.]/g, '')) || 0;
+    const netNum = Math.max(0, totalNum - discountNum);
+    const isSecondaryNotice = /中|以上|7/.test(gradeText || "");
+    const spFee = (spRec.count || 0) * (isSecondaryNotice ? 420 : 380);
+    // 學生個人日曆最底：同時顯示 課堂總額、折扣優惠、折扣後應繳總額 及 分期金額。
+    document.getElementById('noticeTotal').innerText = totalNum;
+    document.getElementById('noticeDiscount').innerText = discountNum;
+    document.getElementById('noticeNet').innerText = netNum;
+    document.getElementById('noticeInst').innerText = Math.round(Math.max(0, netNum - spFee) / 6);
+    // 導師備註：顯示於學生個人日曆。
+    const remarkBox = document.getElementById('noticeRemarkBox');
+    if (curRec.remark) { document.getElementById('noticeRemarkText').innerText = curRec.remark; remarkBox.style.display = 'block'; }
+    else { remarkBox.style.display = 'none'; }
     const container = document.getElementById('noticeCalendarContainer'); container.innerHTML = '';
     const group = getScheduleGroup(gradeText); const aligned = computeFullyAlignedSets(arrA, arrB, group, countA, countB);
-    
+    const spMap = {}; spRec.slots.forEach(s => { if (s.cl) spMap[s.cl] = s.time || ""; });
+
     Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
         let title = document.createElement('div'); title.className = 'month-section-title'; title.innerText = "2026年 " + m + "月"; container.appendChild(title);
         let weeksHeader = document.createElement('div'); weeksHeader.className = 'calendar-weeks-header';
@@ -622,21 +928,26 @@ function buildParentNoticeCalendar(name, gradeText, total, arrA, arrB, countA, c
                 let masterGroup = SCHEDULE_MASTER[group] || SCHEDULE_MASTER.p1p3p6;
                 let subA = masterGroup.A.find(x => cleanDateStr(x.d) === cl); let subB = masterGroup.B.find(x => cleanDateStr(x.d) === cl);
                 let hasA = aligned.setA.has(cl); let hasB = aligned.setB.has(cl);
-                
+                let spSlot = spMap[cl];
+                let spTag = spSlot !== undefined ? "<br><span class='notice-subject-text' style='color:#00695c;'>✨ [特選] " + (spSlot || "整點") + "</span>" : "";
+
                 if (cl === "08/07") {
                     box.style.background = "#F8EDEB"; box.innerHTML += "<br><span style='color:#E5989B;font-size:11px;font-weight:bold;'>中心不開放</span>";
-                } else if (subA && subA.h) { 
-                    box.style.background = "#F8EDEB"; box.innerHTML += "<br><span style='color:#E5989B;font-size:11px;'>紅日假期</span>"; 
-                } else if (hasA) { 
-                    box.classList.add('active-class'); box.innerHTML += "<br><span class='notice-subject-text' style='color:#1b5e20;'>☀️ [A] " + (subA ? subA.s : "常規班") + "</span>"; 
+                } else if (subA && subA.h) {
+                    box.style.background = "#F8EDEB"; box.innerHTML += "<br><span style='color:#E5989B;font-size:11px;'>紅日假期</span>";
+                } else if (hasA) {
+                    box.classList.add('active-class'); box.innerHTML += "<br><span class='notice-subject-text' style='color:#1b5e20;'>☀️ [A] " + (subA ? subA.s : "常規班") + "</span>" + spTag;
                     let btn = document.createElement('button'); btn.className = 'action-mini-btn btn-change no-print'; btn.innerText = '🔄調堂';
                     btn.onclick = (e) => { e.stopPropagation(); startRescheduleMode(cell.d, 'A'); };
                     let bg = document.createElement('div'); bg.className = 'reschedule-btn-group'; bg.appendChild(btn); box.appendChild(bg);
                 } else if (hasB) {
-                    box.classList.add('active-class-b'); box.innerHTML += "<br><span class='notice-subject-text' style='color:#b55d00;'>🌙 [B] " + (subB ? subB.s : "特訓班") + "</span>"; 
+                    box.classList.add('active-class-b'); box.innerHTML += "<br><span class='notice-subject-text' style='color:#b55d00;'>🌙 [B] " + (subB ? subB.s : "特訓班") + "</span>" + spTag;
                     let btn = document.createElement('button'); btn.className = 'action-mini-btn btn-change no-print'; btn.innerText = '🔄調堂';
                     btn.onclick = (e) => { e.stopPropagation(); startRescheduleMode(cell.d, 'B'); };
                     let bg = document.createElement('div'); bg.className = 'reschedule-btn-group'; bg.appendChild(btn); box.appendChild(bg);
+                } else if (spSlot !== undefined) {
+                    box.style.opacity = '1'; box.style.background = "#E0F2F1"; box.style.border = "2px solid #00897b";
+                    box.innerHTML += spTag;
                 } else { box.innerHTML += "<br><span style='color:#ccc;font-size:11px;'>無堂</span>"; }
             }
             grid.appendChild(box);
@@ -673,29 +984,77 @@ function executeClickReschedule(targetNewDate) {
 
 function cancelRescheduleMode() { rescheduleActiveState = { isMode: false, oldDate: null, partType: null }; document.querySelectorAll('.reschedule-targetable').forEach(el => el.classList.remove('reschedule-targetable')); document.getElementById('rescheduleNoticeBar').innerHTML = "💡 <b>直覺調堂：</b>點擊格子右下角 <b>🔄調堂</b>，點擊黃格子完成調堂。"; }
 function showDailyModal() { document.getElementById('dailyListModal').style.display = 'block'; generateDailyBoardHtml(); }
-function switchDailyView(t) { currentDailyViewTab = t; document.getElementById('tabAllA').className = 'tab-btn'+(t==='AllA'?' active':''); document.getElementById('tabBAM').className = 'tab-btn'+(t==='BAM'?' active':''); document.getElementById('tabBPM').className = 'tab-btn'+(t==='BPM'?' active':''); generateDailyBoardHtml(); }
+function switchDailyView(t) { currentDailyViewTab = t; document.getElementById('tabAllA').className = 'tab-btn'+(t==='AllA'?' active':''); document.getElementById('tabBAM').className = 'tab-btn'+(t==='BAM'?' active':''); document.getElementById('tabBPM').className = 'tab-btn'+(t==='BPM'?' active':''); document.getElementById('tabSP').className = 'tab-btn'+(t==='SP'?' active':''); generateDailyBoardHtml(); }
+
+// 將時間軸上所有上課日（type:data）依序攤平，再以每 5 天（一至五）切成一個「星期」，
+// 確保跨月份的同一個星期（例如 06/29 一 至 07/03 五）能完整歸入同一頁列印。
+function buildDailyWeeks() {
+    let flat = [];
+    Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
+        FULL_CALENDAR_AXIS[m].forEach(cell => { if (cell.type === 'data') flat.push(cell); });
+    });
+    let weeks = [];
+    for (let i = 0; i < flat.length; i += 5) weeks.push(flat.slice(i, i + 5));
+    return weeks;
+}
+
+// 各 PART 的列印日期範圍（以 MMDD 數值比較）：
+//   Part A：06/22–07/17；Part B（上／下午）：07/20–08/09；特選班（SP）全面覆蓋，不限範圍。
+function partPrintRangeForTab(tab) {
+    if (tab === 'AllA') return [622, 717];
+    if (tab === 'BAM' || tab === 'BPM') return [720, 809];
+    return null; // SP（特選）→ 全部列印
+}
+function clToNum(cl) { return parseInt(cl.slice(0, 2), 10) * 100 + parseInt(cl.slice(3, 5), 10); }
+
+// 產生單一日子格（沿用原本的學生對齊、特選班融合、假期判斷邏輯）。
+function renderDailyCell(cell) {
+    let cl = cleanDateStr(cell.d); let html = "<div class='cal-box-day'><b>" + cell.d + "</b>"; let count = 0; let tags = "";
+    cloudRecords.forEach(r => {
+        let g = r.gradeText || ""; let grp = getScheduleGroup(g); let aligned = computeFullyAlignedSets(r.detailsA, r.detailsB, grp, Number(r.countA), Number(r.countB));
+        let masterGroup = SCHEDULE_MASTER[grp] || SCHEDULE_MASTER.p1p3p6; let subA = masterGroup.A.find(x => cleanDateStr(x.d) === cl); let subB = masterGroup.B.find(x => cleanDateStr(x.d) === cl);
+        let rm = r.remark ? "<span style='display:block;color:#6d4c41;font-size:10px;font-weight:bold;margin-top:2px;'>📝 " + r.remark + "</span>" : "";
+        if (currentDailyViewTab === 'AllA' && aligned.setA.has(cl)) { count++; let subName = subA ? subA.s : "常規"; tags += "<span class='cal-student-tag'>" + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span>" + rm + "</span>"; }
+        else if (currentDailyViewTab === 'BAM' && aligned.setB.has(cl) && (g.includes('二') || g.includes('五') || g.includes('六') || g.includes('2') || g.includes('5') || g.includes('6'))) { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#E8F5E9;color:#1B5E20;border-left-color:#4CAF50;'> " + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span>" + rm + "</span>"; }
+        else if (currentDailyViewTab === 'BPM' && aligned.setB.has(cl) && (g.includes('一') || g.includes('三') || aligned.setB.has(cl) || g.includes('四') || g.includes('中') || g.includes('1') || g.includes('3') || g.includes('4'))) { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#FFF3E0;color:#E65100;border-left-color:#FF9800;'> " + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span>" + rm + "</span>"; }
+        else if (currentDailyViewTab === 'SP') { let spSlot = parseSPData(r.countSP).slots.find(s => s.cl === cl); if (spSlot) { count++; tags += "<span class='cal-student-tag' style='background:#E0F2F1;color:#004D40;border-left-color:#00897B;'> " + r.name + " <span>(" + g.replace('升','') + " / " + (spSlot.time || "整點") + ")</span>" + rm + "</span>"; } }
+    });
+    // ✨ 暑期特選班 學生按日子融合進 Part A／Part B 上午／Part B 下午 點名板，
+    //    讓導師一眼看到當天同場會出現的特選班學生及其開始時間。
+    let spCount = 0; let spTags = "";
+    if (currentDailyViewTab !== 'SP') {
+        cloudRecords.forEach(r => {
+            let spSlot = parseSPData(r.countSP).slots.find(s => s.cl === cl);
+            if (spSlot) { spCount++; let g = r.gradeText || ""; let rm = r.remark ? "<span style='display:block;color:#6d4c41;font-size:10px;font-weight:bold;margin-top:2px;'>📝 " + r.remark + "</span>" : ""; spTags += "<span class='cal-student-tag' style='background:#E0F2F1;color:#004D40;border-left-color:#00897B;'>✨ " + r.name + " <span>(特選 " + g.replace('升','') + " / " + (spSlot.time || "整點") + ")</span>" + rm + "</span>"; }
+        });
+    }
+    let isH = (SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl) && SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl).h);
+    if (cl === "08/07") { html += "<span style='color:#E5989B;font-weight:bold;'>中心不開放</span>"; }
+    else if (isH) { html += "<span style='color:#E5989B;font-weight:bold;'>紅日假期</span>"; }
+    else if (count > 0 || spCount > 0) {
+        let headLine = "";
+        if (count > 0) headLine += "應到: " + count + " 人";
+        if (spCount > 0) headLine += (count > 0 ? " ＋ " : "") + "✨特選 " + spCount + " 人";
+        html += "<span style='color:#0288D1;font-weight:bold;font-size:11px;'>" + headLine + "</span>" + tags + spTags;
+    } else { html += "<span style='color:#ccc;'>無學生上課</span>"; }
+    html += "</div>";
+    return html;
+}
 
 function generateDailyBoardHtml() {
     const container = document.getElementById('dailyMonthContainer'); container.innerHTML = ''; let htmlContent = "";
-    Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
-        htmlContent += "<div class='month-section-title'>2026年 " + m + "月點名板</div><div class='calendar-grid'>";
-        FULL_CALENDAR_AXIS[m].forEach(cell => {
-            if (cell.type === "empty") { htmlContent += "<div class='cal-box-day' style='opacity:0.2;'>-</div>"; } else {
-                let cl = cleanDateStr(cell.d); htmlContent += "<div class='cal-box-day'><b>" + cell.d + "</b>"; let count = 0; let tags = "";
-                cloudRecords.forEach(r => {
-                    let g = r.gradeText || ""; let grp = getScheduleGroup(g); let aligned = computeFullyAlignedSets(r.detailsA, r.detailsB, grp, Number(r.countA), Number(r.countB));
-                    let masterGroup = SCHEDULE_MASTER[grp] || SCHEDULE_MASTER.p1p3p6; let subA = masterGroup.A.find(x => cleanDateStr(x.d) === cl); let subB = masterGroup.B.find(x => cleanDateStr(x.d) === cl);
-                    if (currentDailyViewTab === 'AllA' && aligned.setA.has(cl)) { count++; let subName = subA ? subA.s : "常規"; tags += "<span class='cal-student-tag'>" + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span></span>"; }
-                    else if (currentDailyViewTab === 'BAM' && aligned.setB.has(cl) && (g.includes('二') || g.includes('五') || g.includes('六') || g.includes('2') || g.includes('5') || g.includes('6'))) { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#E8F5E9;color:#1B5E20;border-left-color:#4CAF50;'> " + r.name + " <span>(AM / " + subName + ")</span></span>"; }
-                    else if (currentDailyViewTab === 'BPM' && aligned.setB.has(cl) && (g.includes('一') || g.includes('三') || aligned.setB.has(cl) || g.includes('四') || g.includes('中') || g.includes('1') || g.includes('3') || g.includes('4'))) { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#FFF3E0;color:#E65100;border-left-color:#FF9800;'> " + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span></span>"; }
-                });
-                let isH = (SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl) && SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl).h);
-                if (cl === "08/07") { htmlContent += "<span style='color:#E5989B;font-weight:bold;'>中心不開放</span>"; }
-                else if (isH) { htmlContent += "<span style='color:#E5989B;font-weight:bold;'>紅日假期</span>"; } else if(count > 0) { htmlContent += "<span style='color:#0288D1;font-weight:bold;font-size:11px;'>應到: " + count + " 人</span>" + tags; } else { htmlContent += "<span style='color:#ccc;'>無學生上課</span>"; }
-                htmlContent += "</div>";
-            }
-        });
-        htmlContent += "</div>";
+    let weeks = buildDailyWeeks();
+    let range = partPrintRangeForTab(currentDailyViewTab);
+    weeks.forEach(week => {
+        let firstNum = clToNum(cleanDateStr(week[0].d));
+        // 是否屬於目前分頁的 PART 範圍：特選班（range 為 null）全面覆蓋；其餘以該星期週一日子是否落在範圍內判斷。
+        let inPart = !range || (firstNum >= range[0] && firstNum <= range[1]);
+        // 不屬於該 PART 的星期：螢幕仍顯示，但加 no-print 令其不被列印（每個版面只印屬於該 PART 的整個星期）。
+        htmlContent += "<div class='daily-week-block" + (inPart ? "" : " no-print") + "'>";
+        htmlContent += "<div class='month-section-title'>2026年　" + week[0].d + " – " + week[week.length - 1].d + " 點名板</div>";
+        htmlContent += "<div class='calendar-grid'>";
+        week.forEach(cell => { htmlContent += renderDailyCell(cell); });
+        htmlContent += "</div></div>";
     });
     container.innerHTML = htmlContent;
 }
