@@ -169,10 +169,10 @@
             <label style="font-weight:bold; color:#388e3c; margin-top:15px; display:block;">⭐ 特選暑期課程 (自選堂數：小學 $380/堂、中學 $420/堂)：</label>
             <select id="selCountSpecial" onchange="calculateLiveRegistrationPrice()">
                 <option value="0">不參加特選暑期課程 ($0)</option>
-                <option value="1">1 堂</option><option value="2">2 堂</option><option value="3">3 堂</option>
-                <option value="4">4 堂</option><option value="5">5 堂</option><option value="6">6 堂</option>
-                <option value="7">7 堂</option><option value="8">8 堂</option><option value="9">9 堂</option>
-                <option value="10">10 堂</option>
+                <option value="2">2 堂</option><option value="4">4 堂</option><option value="6">6 堂</option>
+                <option value="8">8 堂</option><option value="10">10 堂</option><option value="12">12 堂</option>
+                <option value="14">14 堂</option><option value="16">16 堂</option><option value="18">18 堂</option>
+                <option value="20">20 堂</option>
             </select>
         </div>
 
@@ -386,6 +386,12 @@ function applyOverlay(records) {
         if (specialCount(r.special) === 0 && o.special && Object.keys(o.special).length) r.special = safeParseSpecial(o.special);
         if ((!r.discount || Number(r.discount) === 0) && o.discount) r.discount = Number(o.discount) || 0;
         if ((!r.remark || !String(r.remark).trim()) && o.remark) r.remark = String(o.remark);
+        // 🌟 Part A／B 堂數與詳細日期：雲端後端常未保存這些欄位，導致後台 A/B 堂數顯示 0、
+        //    學生個人月曆及點名看板無資料。雲端缺失時以本機備份補回，徹底解決資料消失。
+        if ((!r.countA || Number(r.countA) === 0) && Number(o.countA) > 0) r.countA = o.countA;
+        if ((!r.countB || Number(r.countB) === 0) && Number(o.countB) > 0) r.countB = o.countB;
+        if ((!r.detailsA || !String(r.detailsA).trim()) && o.detailsA) r.detailsA = String(o.detailsA);
+        if ((!r.detailsB || !String(r.detailsB).trim()) && o.detailsB) r.detailsB = String(o.detailsB);
     });
 }
 
@@ -658,14 +664,18 @@ function submitRegistrationForm() {
 
     let payload = {
         name: name, gender: gender, gradeText: grade, total: total,
-        A堂數: targetCountA, B堂數: targetCountB, PartC: isC,
-        timestamp: new Date().toLocaleString(), 詳細日期A: arrA, 詳細日期B: arrB,
+        A堂數: targetCountA, B堂數: targetCountB, countA: targetCountA, countB: targetCountB, PartC: isC,
+        timestamp: new Date().toLocaleString(), 詳細日期A: arrA, 詳細日期B: arrB, detailsA: arrA, detailsB: arrB,
         specialDetails: specialJson, specialLessonsCount: specialNum, 特選: specialJson,
         備註: remark, remark: remark
     };
 
-    // 本機備份特選課堂與備註，即使雲端後端未保存這些附加欄位亦可在後台同步後自動補回
-    if (specialNum > 0 || remark) { saveOverlayEntry(name, { special: special, remark: remark }); }
+    // 🌟 本機備份報名核心（Part A／B 堂數與日期、特選課堂、備註）：即使雲端後端未保存這些欄位，
+    //    後台同步後亦會自動補回，徹底杜絕「A/B 堂數顯示 0、月曆及點名看板無資料」的情況。
+    saveOverlayEntry(name, {
+        countA: targetCountA, countB: targetCountB, detailsA: arrA, detailsB: arrB,
+        special: special, remark: remark
+    });
 
     fetch(scriptURL, {
         method: 'POST', mode: 'no-cors',
