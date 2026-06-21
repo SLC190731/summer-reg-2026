@@ -54,6 +54,7 @@
         .cal-box-day { border: 1px solid #D7CCC8; padding: 6px; min-height: 120px; background: #FFFFFF; font-size: 12px; border-radius: 6px; display: flex; flex-direction: column; justify-content: flex-start; text-align: left; }
         .cal-box-day b { color: #333; display: block; border-bottom: 1px solid #E0D8C0; padding-bottom: 2px; margin-bottom: 4px; font-size: 13px; }
         .cal-student-tag { display: block; background: #E1F5FE; color: #01579B; padding: 3px 5px; border-radius: 4px; font-weight: bold; margin-bottom: 3px; font-size: 11px; border-left: 3px solid #0288D1; line-height: 1.3; }
+        .cal-remark-tag { display: block; background: #FFF8E1; color: #8d6e00; font-weight: bold; font-size: 10px; margin-top: 2px; padding: 1px 4px; border-radius: 3px; border-left: 2px solid #F0A500; line-height: 1.3; white-space: normal; }
         
         .notice-cal-day { border: 1px solid #D7CCC8; padding: 8px; min-height: 105px; background: #FAFAFA; border-radius: 6px; opacity: 0.3; display: flex; flex-direction: column; justify-content: flex-start; text-align: left; position: relative; }
         .notice-cal-day.empty-day { background: #FAF9F5; border: 1px dashed #DDD; opacity: 0.15; }
@@ -267,6 +268,15 @@ function getScheduleGroup(gradeText) {
     return "p1p3p6";
 }
 
+// 🌟 Part B 分上／下午班（依簡章上課時間表）：
+//    上午班 10:00-13:00 → 升 P2, P5, P6；下午班 13:30-16:30 → 升 P1, P3, P4 及 升中一或以上。
+//    點名看板據此把每位 Part B 學生編入正確的上午／下午班別。
+function getPartBSession(gradeText) {
+    var t = String(gradeText || "").trim();
+    if (t.includes("二") || t.includes("五") || t.includes("六") || t.includes("2") || t.includes("5") || t.includes("6")) return "AM";
+    return "PM";
+}
+
 const FULL_CALENDAR_AXIS = {
     "06": [{type:"empty"},{type:"empty"},{type:"empty"},{type:"empty"},{type:"empty"},{type:"data",d:"06/22(一)"},{type:"data",d:"06/23(二)"},{type:"data",d:"06/24(三)"},{type:"data",d:"06/25(四)"},{type:"data",d:"06/26(五)"},{type:"data",d:"06/29(一)"},{type:"data",d:"06/30(二)"}],
     "07": [{type:"empty"},{type:"empty"},{type:"data",d:"07/01(三)",h:true},{type:"data",d:"07/02(四)"},{type:"data",d:"07/03(五)"},{type:"data",d:"07/06(一)"},{type:"data",d:"07/07(二)"},{type:"data",d:"07/08(三)"},{type:"data",d:"07/09(四)"},{type:"data",d:"07/10(五)"},{type:"data",d:"07/13(一)"},{type:"data",d:"07/14(二)"},{type:"data",d:"07/15(三)"},{type:"data",d:"07/16(四)"},{type:"data",d:"07/17(五)"},{type:"data",d:"07/20(一)"},{type:"data",d:"07/21(二)"},{type:"data",d:"07/22(三)"},{type:"data",d:"07/23(四)"},{type:"data",d:"07/24(五)"},{type:"data",d:"07/27(一)"},{type:"data",d:"07/28(二)"},{type:"data",d:"07/29(三)"},{type:"data",d:"07/30(四)"},{type:"data",d:"07/31(五)"}],
@@ -276,10 +286,10 @@ const FULL_CALENDAR_AXIS = {
 // 🌟 物理對齊簡章：徹底修正 SCHEDULE_MASTER 中所有的殘留錯字，確保星期四、五科目完全校正不偏移！
 const SCHEDULE_MASTER = {
     p1p3p6: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語"},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        A: [{d:"06/22(一)",s:"英閱"},{d:"06/23(二)",s:"中閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"成語+HF"},{d:"06/29(一)",s:"詞語+標點"},{d:"06/30(二)",s:"英語體驗"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"數學+HF"},{d:"07/06(一)",s:"中閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中作"},{d:"07/09(四)",s:"中作"},{d:"07/10(五)",s:"中作+HF"},{d:"07/13(一)",s:"英語體驗"},{d:"07/14(二)",s:"英閱"},{d:"07/15(三)",s:"英作"},{d:"07/16(四)",s:"英作"},{d:"07/17(五)",s:"英作+HF"}],
         B: [
             {d:"07/20(一)",s:"英文"},{d:"07/21(二)",s:"英文"},{d:"07/22(三)",s:"英文"},{d:"07/23(四)",s:"英文"},{d:"07/24(五)",s:"英文"},
-            {d:"07/27(一)",s:"英作"},{d:"07/28(二)",s:"英作"},{d:"07/29(三)",s:"英作"},{d:"07/30(四)",s:"英作"},{d:"07/31(五)",s:"英作"},
+            {d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英作"},{d:"07/29(三)",s:"英作"},{d:"07/30(四)",s:"英作"},{d:"07/31(五)",s:"英作"},
             {d:"08/03(一)",s:"中作"},{d:"08/04(二)",s:"中作"},{d:"08/05(三)",s:"中作"},{d:"08/06(四)",s:"中作"},{d:"08/07(五)",s:"中心不開放",c:true},
             {d:"08/10(一)",s:"中文"},{d:"08/11(二)",s:"中文"},{d:"08/12(三)",s:"中文"},{d:"08/13(四)",s:"中文"},{d:"08/14(五)",s:"中文"},
             {d:"08/17(一)",s:"數學"},{d:"08/18(二)",s:"數學"},{d:"08/19(三)",s:"數學"},{d:"08/20(四)",s:"數學"},{d:"08/21(五)",s:"數學"},
@@ -287,25 +297,25 @@ const SCHEDULE_MASTER = {
         ]
     },
     p4p5: {
-        A: [{d:"06/22(一)",s:"英文閱"},{d:"06/23(二)",s:"中文閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"詞語"},{d:"06/30(二)",s:"英語"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中文閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中文作"},{d:"07/09(四)",s:"中文作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"英語"},{d:"07/14(二)",s:"英文閱"},{d:"07/15(三)",s:"英文作"},{d:"07/16(四)",s:"英文作"},{d:"07/17(五)",s:"Happy Fri"}],
+        A: [{d:"06/22(一)",s:"英閱"},{d:"06/23(二)",s:"中閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"成語+HF"},{d:"06/29(一)",s:"詞語+標點"},{d:"06/30(二)",s:"英語體驗"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"數學+HF"},{d:"07/06(一)",s:"中閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中作"},{d:"07/09(四)",s:"中作"},{d:"07/10(五)",s:"中作+HF"},{d:"07/13(一)",s:"英語體驗"},{d:"07/14(二)",s:"英閱"},{d:"07/15(三)",s:"英作"},{d:"07/16(四)",s:"英作"},{d:"07/17(五)",s:"英作+HF"}],
         B: [
-            {d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中模"},{d:"07/24(五)",s:"中解"},
-            {d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英模"},{d:"07/31(五)",s:"英解"},
+            {d:"07/20(一)",s:"中文"},{d:"07/21(二)",s:"中文"},{d:"07/22(三)",s:"中文"},{d:"07/23(四)",s:"中文"},{d:"07/24(五)",s:"模擬考試"},
+            {d:"07/27(一)",s:"英文"},{d:"07/28(二)",s:"英文"},{d:"07/29(三)",s:"英文"},{d:"07/30(四)",s:"英文"},{d:"07/31(五)",s:"模擬考試"},
             {d:"08/03(一)",s:"中作"},{d:"08/04(二)",s:"中作"},{d:"08/05(三)",s:"英作"},{d:"08/06(四)",s:"英作"},{d:"08/07(五)",s:"中心不開放",c:true},
-            {d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數模"},{d:"08/14(五)",s:"數解"},
-            {d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人模"},{d:"08/21(五)",s:"人解"},
-            {d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科模"},{d:"08/28(五)",s:"科解"}
+            {d:"08/10(一)",s:"數學"},{d:"08/11(二)",s:"數學"},{d:"08/12(三)",s:"數學"},{d:"08/13(四)",s:"數學"},{d:"08/14(五)",s:"模擬考試"},
+            {d:"08/17(一)",s:"人文"},{d:"08/18(二)",s:"人文"},{d:"08/19(三)",s:"人文"},{d:"08/20(四)",s:"人文"},{d:"08/21(五)",s:"模擬考試"},
+            {d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"模擬考試"}
         ]
     },
     secondary: {
-        A: [{d:"06/22(一)",s:"英閱"},{d:"06/23(二)",s:"中閱"},{d:"06/24(三)",s:"成語"},{d:"06/25(四)",s:"成語"},{d:"06/26(五)",s:"Happy Fri"},{d:"06/29(一)",s:"科學"},{d:"06/30(二)",s:"歷史"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"Happy Fri"},{d:"07/06(一)",s:"中閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中作"},{d:"07/09(四)",s:"中作"},{d:"07/10(五)",s:"Happy Fri"},{d:"07/13(一)",s:"文言解讀"},{d:"07/14(二)",s:"英閱"},{d:"07/15(三)",s:"英作"},{d:"07/16(四)",s:"英作"},{d:"07/17(五)",s:"Happy Fri"}],
+        A: [{d:"06/22(一)",s:"英閱"},{d:"06/23(二)",s:"中閱"},{d:"06/24(三)",s:"數學"},{d:"06/25(四)",s:"數學"},{d:"06/26(五)",s:"數學+HF"},{d:"06/29(一)",s:"科學實驗+歷史故事"},{d:"06/30(二)",s:"科學實驗+歷史故事"},{d:"07/01(三)",s:"紅日假期",h:true},{d:"07/02(四)",s:"數學"},{d:"07/03(五)",s:"數學+HF"},{d:"07/06(一)",s:"中閱"},{d:"07/07(二)",s:"數學"},{d:"07/08(三)",s:"中作"},{d:"07/09(四)",s:"中作"},{d:"07/10(五)",s:"中作+HF"},{d:"07/13(一)",s:"文言文解讀"},{d:"07/14(二)",s:"文言文解讀"},{d:"07/15(三)",s:"英作"},{d:"07/16(四)",s:"英作"},{d:"07/17(五)",s:"英作+HF"}],
         B: [
             {d:"07/20(一)",s:"中文週"},{d:"07/21(二)",s:"中文週"},{d:"07/22(三)",s:"中文週"},{d:"07/23(四)",s:"中文週"},{d:"07/24(五)",s:"中文週"},
-            {d:"07/27(一)",s:"英文週"},{d:"07/28(二)",s:"英文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},
+            {d:"07/27(一)",s:"中文週"},{d:"07/28(二)",s:"中文週"},{d:"07/29(三)",s:"英文週"},{d:"07/30(四)",s:"英文週"},{d:"07/31(五)",s:"英文週"},
             {d:"08/03(一)",s:"英文週"},{d:"08/04(二)",s:"英文週"},{d:"08/05(三)",s:"英文週"},{d:"08/06(四)",s:"英文週"},{d:"08/07(五)",s:"中心不開放",c:true},
-            {d:"08/10(一)",s:"中史"},{d:"08/11(二)",s:"中史"},{d:"08/12(三)",s:"中史"},{d:"08/13(四)",s:"中史"},{d:"08/14(五)",s:"地理"},
+            {d:"08/10(一)",s:"中史+地理"},{d:"08/11(二)",s:"中史+地理"},{d:"08/12(三)",s:"中史+地理"},{d:"08/13(四)",s:"中史+地理"},{d:"08/14(五)",s:"中史+地理"},
             {d:"08/17(一)",s:"數學週"},{d:"08/18(二)",s:"數學週"},{d:"08/19(三)",s:"數學週"},{d:"08/20(四)",s:"數學週"},{d:"08/21(五)",s:"數學週"},
-            {d:"08/24(一)",s:"科學"},{d:"08/25(二)",s:"科學"},{d:"08/26(三)",s:"科學"},{d:"08/27(四)",s:"科學"},{d:"08/28(五)",s:"西史"}
+            {d:"08/24(一)",s:"科學+西史"},{d:"08/25(二)",s:"科學+西史"},{d:"08/26(三)",s:"科學+西史"},{d:"08/27(四)",s:"科學+西史"},{d:"08/28(五)",s:"科學+西史"}
         ]
     }
 };
@@ -439,8 +449,8 @@ function goToCalendarPage() {
     document.getElementById('partB_ContainerBlock').style.display = (targetCountB > 0) ? 'block' : 'none';
 
     updateRegistrationProgressBarUI();
-    buildSplitRegistrationCalendars();
     buildSpecialRegistrationCalendar();
+    buildSplitRegistrationCalendars();
 }
 
 function backToStepOne() {
@@ -988,14 +998,16 @@ function generateDailyBoardHtml() {
                 cloudRecords.forEach(r => {
                     let g = r.gradeText || ""; let grp = getScheduleGroup(g); let aligned = computeFullyAlignedSets(r.detailsA, r.detailsB, grp, Number(r.countA), Number(r.countB));
                     let masterGroup = SCHEDULE_MASTER[grp] || SCHEDULE_MASTER.p1p3p6; let subA = masterGroup.A.find(x => cleanDateStr(x.d) === cl); let subB = masterGroup.B.find(x => cleanDateStr(x.d) === cl);
-                    if (currentDailyViewTab === 'AllA' && aligned.setA.has(cl)) { count++; let subName = subA ? subA.s : "常規"; tags += "<span class='cal-student-tag'>" + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span></span>"; }
-                    else if (currentDailyViewTab === 'BAM' && aligned.setB.has(cl) && (g.includes('二') || g.includes('五') || g.includes('六') || g.includes('2') || g.includes('5') || g.includes('6'))) { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#E8F5E9;color:#1B5E20;border-left-color:#4CAF50;'> " + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span></span>"; }
-                    else if (currentDailyViewTab === 'BPM' && aligned.setB.has(cl) && (g.includes('一') || g.includes('三') || aligned.setB.has(cl) || g.includes('四') || g.includes('中') || g.includes('1') || g.includes('3') || g.includes('4'))) { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#FFF3E0;color:#E65100;border-left-color:#FF9800;'> " + r.name + " <span>(" + g.replace('升','') + " / " + subName + ")</span></span>"; }
-                    // ⭐ 特選自選課堂：上午班/全A看板顯示 13:00 前；下午班看板顯示 13:00 及之後
+                    let rk = (r.remark && String(r.remark).trim()) ? "<span class='cal-remark-tag'>📝 " + escapeHtml(r.remark) + "</span>" : "";
+                    if (currentDailyViewTab === 'AllA' && aligned.setA.has(cl)) { count++; let subName = subA ? subA.s : "常規"; tags += "<span class='cal-student-tag'>" + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(subName) + ")</span>" + rk + "</span>"; }
+                    else if (currentDailyViewTab === 'BAM' && aligned.setB.has(cl) && getPartBSession(g) === 'AM') { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#E8F5E9;color:#1B5E20;border-left-color:#4CAF50;'> " + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(subName) + ")</span>" + rk + "</span>"; }
+                    else if (currentDailyViewTab === 'BPM' && aligned.setB.has(cl) && getPartBSession(g) === 'PM') { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#FFF3E0;color:#E65100;border-left-color:#FF9800;'> " + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(subName) + ")</span>" + rk + "</span>"; }
+                    // ⭐ 特選自選課堂：依學生所選日期融入所屬 Part 的點名看板。全 A 看板顯示該日全部特選；
+                    //    Part B 上午看板顯示 13:00 前、下午看板顯示 13:00 及之後的特選堂，讓導師一眼看清當場學生。
                     if (r.special && r.special[cl]) {
                         let startHour = parseInt(String(r.special[cl]).split(":")[0], 10) || 0;
-                        let showInThisView = ((currentDailyViewTab === 'AllA' || currentDailyViewTab === 'BAM') && startHour < 13) || (currentDailyViewTab === 'BPM' && startHour >= 13);
-                        if (showInThisView) { count++; tags += "<span class='cal-student-tag' style='background:#E8F5E9;color:#2e7d32;border-left-color:#2e7d32;'>⭐ [特選] " + r.name + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(r.special[cl]) + ")</span></span>"; }
+                        let showInThisView = (currentDailyViewTab === 'AllA') || (currentDailyViewTab === 'BAM' && startHour < 13) || (currentDailyViewTab === 'BPM' && startHour >= 13);
+                        if (showInThisView) { count++; tags += "<span class='cal-student-tag' style='background:#E8F5E9;color:#2e7d32;border-left-color:#2e7d32;'>⭐ [特選] " + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(r.special[cl]) + ")</span>" + rk + "</span>"; }
                     }
                 });
                 let isH = (SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl) && SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl).h);
