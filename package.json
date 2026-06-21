@@ -1,0 +1,9 @@
+{
+  "name": "summer-reg-2026",
+  "version": "1.0.0",
+  "private": true,
+  "description": "2026 博學堂暑期課程報名系統 — 折扣優惠／備註與暑期特選班排課的雲端資料庫後端",
+  "dependencies": {
+    "@netlify/database": "^1.0.0"
+  }
+}
