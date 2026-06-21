@@ -28,6 +28,7 @@
         .day.selected-b { background: #FFF3E0 !important; border: 2px solid #e67e22 !important; color: #b55d00; font-weight: bold; }
         .day.selected-sp { background: #E8F5E9 !important; border: 2px solid #388e3c !important; color: #1b5e20; font-weight: bold; }
         .day .sp-time-tag { font-size: 11px; color: #2e7d32; margin-top: 4px; font-weight: bold; }
+        .day .sp-time-select { margin-top: 4px; width: 90%; font-size: 12px; padding: 2px; border: 1px solid #388e3c; border-radius: 5px; background: #fff; color: #1b5e20; font-weight: bold; cursor: pointer; }
         .day.holiday { background: #F8EDEB !important; cursor: not-allowed; opacity: 0.5; }
         
         .result-box { background: #F0F4F0; padding: 20px; border-radius: 12px; border-left: 10px solid #8FA998; margin-top: 15px; }
@@ -164,6 +165,15 @@
                 <option value="否">不參加 Part C 成長之旅 ($0)</option>
                 <option value="是">參加 Part C 成長之旅 (套裝折扣連動計費)</option>
             </select>
+
+            <label style="font-weight:bold; color:#388e3c; margin-top:15px; display:block;">⭐ 特選暑期課程 (自選堂數：小學 $380/堂、中學 $420/堂)：</label>
+            <select id="selCountSpecial" onchange="calculateLiveRegistrationPrice()">
+                <option value="0">不參加特選暑期課程 ($0)</option>
+                <option value="1">1 堂</option><option value="2">2 堂</option><option value="3">3 堂</option>
+                <option value="4">4 堂</option><option value="5">5 堂</option><option value="6">6 堂</option>
+                <option value="7">7 堂</option><option value="8">8 堂</option><option value="9">9 堂</option>
+                <option value="10">10 堂</option>
+            </select>
         </div>
 
         <div class="result-box">
@@ -171,6 +181,7 @@
             <p style="margin:5px 0;">已選 Part A 組合：<span id="liveCountA" style="font-weight:bold;color:#2e7d32;">0</span> 堂 <span id="liveFeeDetailA" style="color:#2e7d32; font-weight:bold; margin-left:10px;">($0)</span></p>
             <p style="margin:5px 0;">已選 Part B 組合：<span id="liveCountB" style="font-weight:bold;color:#e67e22;">0</span> 堂 <span id="liveFeeDetailB" style="color:#e67e22; font-weight:bold; margin-left:10px;">($0)</span></p>
             <p style="margin:5px 0;">加購 Part C 項目：<span id="liveCountC" style="font-weight:bold;color:#9c27b0;">否</span> <span id="liveFeeDetailC" style="color:#9c27b0; font-weight:bold; margin-left:10px;"></span></p>
+            <p style="margin:5px 0;">特選暑期課程：<span id="liveCountSP" style="font-weight:bold;color:#388e3c;">0</span> 堂 <span id="liveFeeDetailSP" style="color:#388e3c; font-weight:bold; margin-left:10px;">($0)</span></p>
             <p style="margin:5px 0; font-size:1.3em; font-weight:bold; color:#d35400; border-top:1px dashed #ccc; padding-top:10px;">核實學費總額：$<span id="liveTotalAmount">0</span></p>
             <p style="margin:5px 0; font-size:1.2em; font-weight:bold; color:#2980b9;" id="liveInstallmentBox">分期費用：每期 $0 / 6期</p>
         </div>
@@ -199,9 +210,9 @@
         </div>
 
         <div id="partSpecial_ContainerBlock" style="margin-top:20px;">
-            <div class="part-header-title" style="background:#388e3c;">⭐ 特選自選課堂選課區（可選，非必填）</div>
-            <div id="progBoxSP" class="progress-header-sticky" style="color:#2e7d32; border-color:#388e3c;">特選自選：0 堂</div>
-            <p style="font-size:14px; color:#2e7d32; margin:0 0 10px 0;">💡 點選任何一個上課日子即可加入特選自選課堂，並輸入該堂的上課時間（例如 10:00-12:00）。再次點選可取消。</p>
+            <div class="part-header-title" style="background:#388e3c;">⭐ 特選暑期課程 — 選擇日期及上課時間</div>
+            <div id="progBoxSP" class="progress-header-sticky" style="color:#2e7d32; border-color:#388e3c;">特選暑期課程選課進度：0 / 0 堂</div>
+            <p style="font-size:14px; color:#2e7d32; margin:0 0 10px 0;">💡 點選任何一個上課日子即可加入特選暑期課堂，再從下拉式清單選擇上課時間（開放時間 10:00–15:00，每個整點開課）。再次點選可取消。</p>
             <div class="section" id="calContainerSP"></div>
         </div>
 
@@ -254,9 +265,13 @@ let rescheduleActiveState = { isMode: false, oldDate: null, partType: null };
 
 let targetCountA = 0;
 let targetCountB = 0;
+let targetCountSpecial = 0;
 let selectedRegDatesA = new Set();
 let selectedRegDatesB = new Set();
 let selectedSpecialDates = {};
+
+// 特選暑期課程開放時間：10:00–15:00，每個整點開課
+const SPECIAL_TIME_OPTIONS = ["10:00", "11:00", "12:00", "13:00", "14:00", "15:00"];
 
 const GRADE_ORDER = { "升小一":1, "升小二":2, "升小三":3, "升小四":4, "升小五":5, "升小六":6, "升中一或以上":7 };
 
@@ -395,12 +410,14 @@ function calculateLiveRegistrationPrice() {
     targetCountA = Number(document.getElementById('selCountA').value);
     targetCountB = Number(document.getElementById('selCountB').value);
     let isC = document.getElementById('selCountC').value;
+    targetCountSpecial = Number(document.getElementById('selCountSpecial').value);
     let grade = document.getElementById('stuGrade').value;
     let isSecondary = grade.includes("中") || grade.includes("以上") || grade.includes("7");
-    
+
     document.getElementById('liveCountA').innerText = targetCountA;
     document.getElementById('liveCountB').innerText = targetCountB;
     document.getElementById('liveCountC').innerText = isC;
+    document.getElementById('liveCountSP').innerText = targetCountSpecial;
     
     let priceA = 0; let priceB = 0; let priceC = 0;
     if (targetCountA === 12) priceA = isSecondary ? 2760 : 2520;
@@ -418,12 +435,16 @@ function calculateLiveRegistrationPrice() {
         else if (targetCountB === 29) priceC = isSecondary ? 2940 : 2640;
     }
     
+    // 特選暑期課程：小學 $380/堂、中學 $420/堂
+    let priceSP = targetCountSpecial * (isSecondary ? 420 : 380);
+
     // 即時補上獨立項目金額標記
     document.getElementById('liveFeeDetailA').innerText = priceA > 0 ? `費用: $${priceA}` : `($0)`;
     document.getElementById('liveFeeDetailB').innerText = priceB > 0 ? `費用: $${priceB}` : `($0)`;
     document.getElementById('liveFeeDetailC').innerText = priceC > 0 ? `(加購費用: $${priceC})` : ``;
-    
-    let grandTotal = priceA + priceB + priceC;
+    document.getElementById('liveFeeDetailSP').innerText = priceSP > 0 ? `費用: $${priceSP}` : `($0)`;
+
+    let grandTotal = priceA + priceB + priceC + priceSP;
     document.getElementById('liveTotalAmount').innerText = grandTotal;
     let instValue = Math.round(grandTotal / 6);
     document.getElementById('liveInstallmentBox').innerText = `分期費用：每期 $${instValue} / 6期`;
@@ -435,7 +456,8 @@ function goToCalendarPage() {
     
     targetCountA = Number(document.getElementById('selCountA').value);
     targetCountB = Number(document.getElementById('selCountB').value);
-    
+    targetCountSpecial = Number(document.getElementById('selCountSpecial').value);
+
     selectedRegDatesA.clear();
     selectedRegDatesB.clear();
     selectedSpecialDates = {};
@@ -443,10 +465,14 @@ function goToCalendarPage() {
 
     document.getElementById('page1').classList.remove('active');
     document.getElementById('page2').classList.add('active');
-    document.getElementById('regLimitTip').innerText = `🎯 堂數指標提示：Part A 請選滿 ${targetCountA} 天，Part B 請選滿 ${targetCountB} 天。`;
+    let tip = `🎯 堂數指標提示：Part A 請選滿 ${targetCountA} 天，Part B 請選滿 ${targetCountB} 天。`;
+    if (targetCountSpecial > 0) tip += ` 特選暑期課程請選滿 ${targetCountSpecial} 堂並選定時間。`;
+    document.getElementById('regLimitTip').innerText = tip;
 
     document.getElementById('partA_ContainerBlock').style.display = (targetCountA > 0) ? 'block' : 'none';
     document.getElementById('partB_ContainerBlock').style.display = (targetCountB > 0) ? 'block' : 'none';
+    // 不參與特選暑期課程的學生，不顯示時間選擇區
+    document.getElementById('partSpecial_ContainerBlock').style.display = (targetCountSpecial > 0) ? 'block' : 'none';
 
     updateRegistrationProgressBarUI();
     buildSpecialRegistrationCalendar();
@@ -461,7 +487,7 @@ function backToStepOne() {
 function updateRegistrationProgressBarUI() {
     document.getElementById('progBoxA').innerText = `Part A 選課進度：${selectedRegDatesA.size} / ${targetCountA} 堂`;
     document.getElementById('progBoxB').innerText = `Part B 選課進度：${selectedRegDatesB.size} / ${targetCountB} 堂`;
-    document.getElementById('progBoxSP').innerText = `特選自選：${Object.keys(selectedSpecialDates).length} 堂`;
+    document.getElementById('progBoxSP').innerText = `特選暑期課程選課進度：${Object.keys(selectedSpecialDates).length} / ${targetCountSpecial} 堂`;
 }
 
 // 🌟 特選自選課堂選課區：學生可點選任何正規上課日子加入特選自選課堂，並自行輸入該堂上課時間。
@@ -498,10 +524,8 @@ function buildSpecialRegistrationCalendar() {
                         if (selectedSpecialDates[cl]) {
                             delete selectedSpecialDates[cl];
                         } else {
-                            let t = prompt("請輸入【" + cell.d + "】特選自選課堂的上課時間（例如 10:00-12:00）：", "10:00-12:00");
-                            if (t === null) return;
-                            let tm = String(t).match(/\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}/);
-                            selectedSpecialDates[cl] = tm ? tm[0].replace(/\s/g, '') : "10:00-12:00";
+                            if (Object.keys(selectedSpecialDates).length >= targetCountSpecial) { alert(`⚠️ 特選暑期課程已選滿 ${targetCountSpecial} 堂。`); return; }
+                            selectedSpecialDates[cl] = "10:00";
                         }
                         renderSpecialBox(box, cl, cell.d);
                         updateRegistrationProgressBarUI();
@@ -517,12 +541,16 @@ function buildSpecialRegistrationCalendar() {
 function renderSpecialBox(box, cl, label) {
     if (selectedSpecialDates[cl]) {
         box.classList.add('selected-sp');
-        box.innerHTML = "<b>" + label + "</b><div class='sp-time-tag'>⭐ " + escapeHtml(selectedSpecialDates[cl]) + "</div>";
+        let opts = SPECIAL_TIME_OPTIONS.map(t => "<option value='" + t + "'" + (t === selectedSpecialDates[cl] ? " selected" : "") + ">" + t + "</option>").join("");
+        box.innerHTML = "<b>" + label + "</b><div class='sp-time-tag'>⭐ 已選 · 上課時間</div>" +
+            "<select class='sp-time-select' onclick='event.stopPropagation()' onchange='setSpecialTime(\"" + cl + "\", this.value)'>" + opts + "</select>";
     } else {
         box.classList.remove('selected-sp');
         box.innerHTML = "<b>" + label + "</b><div class='sub-tag' style='color:#999;'>點選加入特選</div>";
     }
 }
+
+function setSpecialTime(cl, val) { if (selectedSpecialDates[cl]) selectedSpecialDates[cl] = val; }
 
 function buildSplitRegistrationCalendars() {
     const containerA = document.getElementById('calContainerA');
@@ -611,6 +639,7 @@ function buildSplitRegistrationCalendars() {
 function submitRegistrationForm() {
     if(targetCountA > 0 && selectedRegDatesA.size < targetCountA) { alert(`❌ 排課不完整：Part A 需要選滿 ${targetCountA} 堂。`); return; }
     if(targetCountB > 0 && selectedRegDatesB.size < targetCountB) { alert(`❌ 排課不完整：Part B 需要選滿 ${targetCountB} 堂。`); return; }
+    if(targetCountSpecial > 0 && Object.keys(selectedSpecialDates).length < targetCountSpecial) { alert(`❌ 排課不完整：特選暑期課程需要選滿 ${targetCountSpecial} 堂並選定時間。`); return; }
 
     const name = document.getElementById('stuName').value.trim();
     const gender = document.getElementById('stuGender').value;
@@ -649,6 +678,7 @@ function submitRegistrationForm() {
         document.getElementById('selCountA').value = "0";
         document.getElementById('selCountB').value = "0";
         document.getElementById('selCountC').value = "否";
+        document.getElementById('selCountSpecial').value = "0";
         document.getElementById('stuRemark').value = '';
         selectedSpecialDates = {};
         calculateLiveRegistrationPrice();
