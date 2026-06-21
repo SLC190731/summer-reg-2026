@@ -96,6 +96,8 @@
 
             /* 點名表列印模式：顯示每日名單看板（含 Part C 成長之旅點名表） */
             body.printing-daily .container { display: none !important; }
+            /* 點名表列印時，永久隱藏個人月曆通知書（含費用總計／學費分期），杜絕看板頂部出現費用資料 */
+            body.printing-daily #parentNoticeModal { display: none !important; }
             body.printing-daily #dailyListModal { display: block !important; position: static !important; background: white !important; width: 100% !important; height: auto !important; }
             body.printing-daily #dailyListModal .modal-content { border: none !important; padding: 0 !important; width: 100% !important; height: auto !important; overflow: visible !important; margin: 0 !important; }
             body.printing-daily .no-print { display: none !important; }
@@ -251,7 +253,7 @@
     </div>
 </div>
 
-<div id="parentNoticeModal"><div class="modal-content"><div style="text-align:center; border-bottom:3px solid #4A6D8C; padding-bottom:10px; margin-bottom:15px;"><h2 style="color:#4A6D8C; margin:0;" id="noticeStuName">學生上課月曆通知書</h2></div><div id="rescheduleNoticeBar" class="no-print" style="background:#FFF3CD; padding:12px; border-radius:8px; font-size:14px; border-left:5px solid #e67e22; color:#d35400; margin-bottom:15px; font-weight:bold;">💡 <b>直覺調堂：</b>點擊格子右下角 <b>🔄調堂</b>，點擊黃格子完成調堂。</div><div id="noticeCalendarContainer" onclick="handleCalendarContainerClick(event)"></div><div class="result-box"><p style="font-size:1.25em; font-weight:bold; color:#d35400; margin:0 0 6px 0;">費用總計：$<span id="noticeTotalSum">0</span></p><p>學費分期：每期 $<span id="noticeInst">0</span> / 6期</p><p id="noticeExtraInfo" style="color:#d35400; font-weight:bold; margin:8px 0 0 0;"></p></div><div class="no-print" style="display:flex; gap:10px; margin-top:20px;"><button class="btn" style="background:#0288D1;" onclick="window.print()">🖨 列印通知書</button><button class="btn" style="background:#795548;" onclick="cancelRescheduleMode(); document.getElementById('parentNoticeModal').style.display='none';">關閉</button></div></div></div>
+<div id="parentNoticeModal"><div class="modal-content"><div style="text-align:center; border-bottom:3px solid #4A6D8C; padding-bottom:10px; margin-bottom:15px;"><h2 style="color:#4A6D8C; margin:0;" id="noticeStuName">學生上課月曆通知書</h2></div><div id="rescheduleNoticeBar" class="no-print" style="background:#FFF3CD; padding:12px; border-radius:8px; font-size:14px; border-left:5px solid #e67e22; color:#d35400; margin-bottom:15px; font-weight:bold;">💡 <b>直覺調堂：</b>點擊格子右下角 <b>🔄調堂</b>，點擊黃格子完成調堂。</div><div id="noticeCalendarContainer" onclick="handleCalendarContainerClick(event)"></div><div class="result-box"><p style="font-size:1.25em; font-weight:bold; color:#d35400; margin:0 0 6px 0;">費用總計：$<span id="noticeTotalSum">0</span></p><p id="noticeInstLine">學費分期：每期 $<span id="noticeInst">0</span> / 6期</p><p id="noticeExtraInfo" style="color:#d35400; font-weight:bold; margin:8px 0 0 0;"></p></div><div class="no-print" style="display:flex; gap:10px; margin-top:20px;"><button class="btn" style="background:#0288D1;" onclick="window.print()">🖨 列印通知書</button><button class="btn" style="background:#795548;" onclick="cancelRescheduleMode(); document.getElementById('parentNoticeModal').style.display='none';">關閉</button></div></div></div>
 <div id="dailyListModal"><div class="modal-content"><div style="display:flex; justify-content: space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:10px;"><h3 style="margin:0;">📅 導師專用：暑期每日上課名單看板</h3><div class="no-print" style="display:flex; gap:8px;"><button class="btn" style="background:#0288D1; width:auto; margin:0;" onclick="printDailyBoard()">🖨 列印此名單</button><button class="btn" style="background:#795548; width:auto; margin:0;" onclick="document.getElementById('dailyListModal').style.display='none';">關閉</button></div></div><div class="view-tab-container no-print" style="margin-top:15px;"><button id="tabAllA" class="tab-btn active" onclick="switchDailyView('AllA')">☀️ 全體 Part A 名單</button><button id="tabBAM" class="tab-btn" onclick="switchDailyView('BAM')">☀️ Part B 上午班 (P2, P5, P6)</button><button id="tabBPM" class="tab-btn" onclick="switchDailyView('BPM')">🌙 Part B 下午班 (P1, P3, P4, 中學)</button><button id="tabPartC" class="tab-btn" onclick="switchDailyView('PartC')">🔮 Part C 成長之旅點名表</button></div><div id="dailyMonthContainer"></div></div></div>
 
 <script>
@@ -452,8 +454,22 @@ function calculateLiveRegistrationPrice() {
 
     let grandTotal = priceA + priceB + priceC + priceSP;
     document.getElementById('liveTotalAmount').innerText = grandTotal;
-    let instValue = Math.round(grandTotal / 6);
-    document.getElementById('liveInstallmentBox').innerText = `分期費用：每期 $${instValue} / 6期`;
+
+    // 🌟 分期規則：特選暑期課程一律不設分期，須一次過繳付；單獨加購 Part C（沒有 Part A／B）亦不設分期。
+    //    分期只適用於 Part A／B（連同其套裝內的 Part C），特選費用永不計入分期金額。
+    let installmentBase = priceA + priceB + priceC;
+    let regularTermPresent = (priceA > 0 || priceB > 0);
+    let instBox = document.getElementById('liveInstallmentBox');
+    if (regularTermPresent) {
+        let instValue = Math.round(installmentBase / 6);
+        let instText = `分期費用：每期 $${instValue} / 6期`;
+        if (priceSP > 0) instText += `（特選暑期課程 $${priceSP} 不設分期，須一次過繳付）`;
+        instBox.innerText = instText;
+    } else if (grandTotal > 0) {
+        instBox.innerText = `本組合不設分期，須一次過全數繳付 $${grandTotal}`;
+    } else {
+        instBox.innerText = `分期費用：每期 $0 / 6期`;
+    }
 }
 
 function goToCalendarPage() {
@@ -897,7 +913,26 @@ function buildParentNoticeCalendar(name, gradeText, total, arrA, arrB, countA, c
     document.getElementById('noticeStuName').innerText = name + " (" + gradeText + ") 暑期上課月曆通知書";
     var netTotal = Number(String(total).replace(/[^0-9]/g, '')) || 0;
     document.getElementById('noticeTotalSum').innerText = netTotal;
-    document.getElementById('noticeInst').innerText = Math.round(netTotal / 6);
+    // 🌟 分期規則：特選暑期課程不計分期；單獨 Part C（沒有 Part A／B）亦不設分期。
+    //    分期金額以扣除特選費用後的學費為基礎；只有 Part A／B 學生才顯示分期。
+    var spCount = specialCount(special);
+    var isSecGrade = String(gradeText).includes("中") || String(gradeText).includes("F") || String(gradeText).includes("7") || String(gradeText).includes("以上");
+    var spFee = spCount * (isSecGrade ? 420 : 380);
+    var regularTermPresent = (Number(countA) > 0 || Number(countB) > 0);
+    var instLine = document.getElementById('noticeInstLine');
+    if (instLine) {
+        if (regularTermPresent) {
+            var instBase = Math.max(0, netTotal - spFee);
+            var instAmt = Math.round(instBase / 6);
+            var lineTxt = "學費分期：每期 $" + instAmt + " / 6期";
+            if (spFee > 0) lineTxt += "（特選暑期課程 $" + spFee + " 不設分期，須一次過繳付）";
+            instLine.innerHTML = lineTxt;
+        } else if (netTotal > 0) {
+            instLine.innerHTML = "本組合不設分期，須一次過全數繳付 $" + netTotal;
+        } else {
+            instLine.innerHTML = "學費分期：每期 $0 / 6期";
+        }
+    }
     var extra = document.getElementById('noticeExtraInfo');
     if (extra) {
         var html = "";
@@ -1040,7 +1075,7 @@ function generateDailyBoardHtml() {
                     let masterGroup = SCHEDULE_MASTER[grp] || SCHEDULE_MASTER.p1p3p6; let subA = masterGroup.A.find(x => cleanDateStr(x.d) === cl); let subB = masterGroup.B.find(x => cleanDateStr(x.d) === cl);
                     let rk = (r.remark && String(r.remark).trim()) ? "<span class='cal-remark-tag'>📝 " + escapeHtml(r.remark) + "</span>" : "";
                     if (currentDailyViewTab === 'AllA' && aligned.setA.has(cl)) { count++; let subName = subA ? subA.s : "常規"; tags += "<span class='cal-student-tag'>" + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(subName) + ")</span>" + rk + "</span>"; }
-                    else if (currentDailyViewTab === 'BAM' && aligned.setB.has(cl) && getPartBSession(g) === 'AM') { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#E8F5E9;color:#1B5E20;border-left-color:#4CAF50;'> " + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(subName) + ")</span>" + rk + "</span>"; }
+                    else if (currentDailyViewTab === 'BAM' && aligned.setB.has(cl) && getPartBSession(g) === 'AM') { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#E0F7FA;color:#006064;border-left-color:#00ACC1;'> " + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(subName) + ")</span>" + rk + "</span>"; }
                     else if (currentDailyViewTab === 'BPM' && aligned.setB.has(cl) && getPartBSession(g) === 'PM') { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#FFF3E0;color:#E65100;border-left-color:#FF9800;'> " + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(subName) + ")</span>" + rk + "</span>"; }
                     // ⭐ 特選自選課堂：依學生所選日期融入所屬 Part 的點名看板。全 A 看板顯示該日全部特選；
                     //    Part B 上午看板顯示 13:00 前、下午看板顯示 13:00 及之後的特選堂，讓導師一眼看清當場學生。
