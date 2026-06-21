@@ -253,6 +253,7 @@
         <div class="no-print" style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: center;">
             <button class="btn" style="background: #e67e22; width: auto; margin-top:0;" onclick="showDailyModal()">📅 每日上課名單看板</button>
             <button class="btn" style="background: #2e7d32; width: auto; margin-top:0;" onclick="refreshFromSheets()">🔄 手動同步雲端數據</button>
+            <button class="btn" style="background: #1a7f5a; width: auto; margin-top:0;" onclick="backupToGoogleSheet(this)">⬆️ 立即備份至 Google 試算表</button>
             <button class="btn" style="background: #0288D1; width: auto; margin-top:0;" onclick="printAdminReport(false)">🖨 列印整個報表</button>
             <button class="btn" style="background: #455a64; width: auto; margin-top:0;" onclick="printAdminReport(true)">🖨 列印整個報表（不含實收學費總額）</button>
             <button class="btn" style="background: #795548; width: auto; margin-top:0;" onclick="exitAdminPanel()">🚪 退出後台回報名頁</button>
@@ -743,6 +744,29 @@ function computeFullyAlignedSets(detailsValueA, detailsValueB, group, countA, co
         }
     }
     return { setA: setA, setB: setB };
+}
+
+function backupToGoogleSheet(btn) {
+    // 手動把完整名冊立即備份至 Google 試算表（伺服器在每次新增／修改／刪除後亦會自動同步）。
+    var original = btn ? btn.innerHTML : "";
+    if (btn) { btn.disabled = true; btn.innerHTML = "⏳ 備份中..."; }
+    logDebug("正在把完整名冊備份至 Google 試算表...", false);
+    fetch(apiURL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'sync' }) })
+    .then(res => res.json())
+    .then(data => {
+        if (data && data.ok) {
+            alert("✅ 已成功備份 " + (data.count != null ? data.count + " 筆" : "全部") + "報名資料至 Google 試算表。");
+            logDebug("Google 試算表備份成功，共 " + (data.count != null ? data.count : "?") + " 筆。", false);
+        } else if (data && data.configured === false) {
+            alert("⚠️ 尚未設定 Google 試算表同步網址。\n請依照交付說明，先在 Netlify 加入環境變數 GOOGLE_SHEETS_WEBHOOK_URL。");
+            logDebug("Google 試算表同步尚未設定。", true);
+        } else {
+            alert("❌ 備份至 Google 試算表失敗，請稍後再試。\n" + ((data && (data.error || data.status)) || ""));
+            logDebug("Google 試算表備份失敗：" + ((data && (data.error || data.status)) || "未知原因"), true);
+        }
+    })
+    .catch(err => { alert("❌ 備份至 Google 試算表失敗：" + err.message); logDebug("備份失敗：" + err.message, true); })
+    .finally(() => { if (btn) { btn.disabled = false; btn.innerHTML = original; } });
 }
 
 function refreshFromSheets() {
