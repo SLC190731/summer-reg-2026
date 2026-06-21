@@ -388,31 +388,48 @@ const OVERLAY_KEY = 'bxt_overlay_v1';
 function loadOverlay() {
     try { return JSON.parse(localStorage.getItem(OVERLAY_KEY) || '{}') || {}; } catch (e) { return {}; }
 }
-function saveOverlayEntry(name, patch) {
-    if (!name) return;
+// 🌟 每次報名都是獨立一筆：本機備份改以「姓名＋登記時間」為唯一鍵，杜絕同名學生第二次報名時
+//    覆蓋第一次的備份，亦杜絕把以往的折扣自動帶入新報名。登記時間於提交時產生並隨表單送上雲端，
+//    回流時據此精確對齊，每筆報名各自獨立，由老師在後台自行決定刪除哪一筆。
+function overlayKey(name, timestamp) {
+    return String(name == null ? "" : name).trim() + "||" + String(timestamp == null ? "" : timestamp).trim();
+}
+function saveOverlayEntry(key, patch) {
+    if (!key) return;
     try {
         let all = loadOverlay();
-        all[name] = Object.assign(all[name] || {}, patch);
+        all[key] = Object.assign(all[key] || {}, patch);
         localStorage.setItem(OVERLAY_KEY, JSON.stringify(all));
     } catch (e) {}
+}
+function removeOverlayEntry(key) {
+    if (!key) return;
+    try { let all = loadOverlay(); if (all[key]) { delete all[key]; localStorage.setItem(OVERLAY_KEY, JSON.stringify(all)); } } catch (e) {}
 }
 function applyOverlay(records) {
     let all = loadOverlay();
     records.forEach(r => {
-        let o = all[r.name]; if (!o) return;
-        // 雲端若已有資料則以雲端為準；雲端缺失時才用本機備份補回，避免無故覆寫
-        if (specialCount(r.special) === 0 && o.special && Object.keys(o.special).length) r.special = safeParseSpecial(o.special);
-        if ((!r.discount || Number(r.discount) === 0) && o.discount) r.discount = Number(o.discount) || 0;
-        if ((!r.remark || !String(r.remark).trim()) && o.remark) r.remark = String(o.remark);
-        // 🌟 Part A／B 堂數與詳細日期：雲端後端常未保存這些欄位，導致後台 A/B 堂數顯示 0、
-        //    學生個人月曆及點名看板無資料。雲端缺失時以本機備份補回，徹底解決資料消失。
-        if ((!r.countA || Number(r.countA) === 0) && Number(o.countA) > 0) r.countA = o.countA;
-        if ((!r.countB || Number(r.countB) === 0) && Number(o.countB) > 0) r.countB = o.countB;
-        if ((!r.detailsA || !String(r.detailsA).trim()) && o.detailsA) r.detailsA = String(o.detailsA);
-        if ((!r.detailsB || !String(r.detailsB).trim()) && o.detailsB) r.detailsB = String(o.detailsB);
-        // 🌟 Part C 參加狀態：雲端後端常未保存 PartC 欄位，導致回流後變回「否」，
-        //    令 Part C 統計人數歸零、Part C 點名名單空白。雲端缺失時以本機備份補回。
-        if ((!r.hasPartC || String(r.hasPartC).trim() !== "是") && String(o.hasPartC).trim() === "是") r.hasPartC = "是";
+        // 本次報名的精確備份（姓名＋登記時間）；折扣只會由這筆精確備份沿用，絕不從同名其他紀錄或舊資料帶入。
+        let o = all[overlayKey(r.name, r.timestamp)];
+        // 舊版（僅以姓名為鍵）備份只作堂數／日期等結構資料的後備補回，折扣一律不沿用，避免舊折扣自動回填。
+        let legacy = all[r.name];
+        let struct = o || legacy;
+        if (struct) {
+            // 雲端若已有資料則以雲端為準；雲端缺失時才用本機備份補回，避免無故覆寫
+            if (specialCount(r.special) === 0 && struct.special && Object.keys(struct.special).length) r.special = safeParseSpecial(struct.special);
+            if ((!r.remark || !String(r.remark).trim()) && struct.remark) r.remark = String(struct.remark);
+            // 🌟 Part A／B 堂數與詳細日期：雲端後端常未保存這些欄位，導致後台 A/B 堂數顯示 0、
+            //    學生個人月曆及點名看板無資料。雲端缺失時以本機備份補回，徹底解決資料消失。
+            if ((!r.countA || Number(r.countA) === 0) && Number(struct.countA) > 0) r.countA = struct.countA;
+            if ((!r.countB || Number(r.countB) === 0) && Number(struct.countB) > 0) r.countB = struct.countB;
+            if ((!r.detailsA || !String(r.detailsA).trim()) && struct.detailsA) r.detailsA = String(struct.detailsA);
+            if ((!r.detailsB || !String(r.detailsB).trim()) && struct.detailsB) r.detailsB = String(struct.detailsB);
+            // 🌟 Part C 參加狀態：雲端後端常未保存 PartC 欄位，導致回流後變回「否」，
+            //    令 Part C 統計人數歸零、Part C 點名名單空白。雲端缺失時以本機備份補回。
+            if ((!r.hasPartC || String(r.hasPartC).trim() !== "是") && String(struct.hasPartC).trim() === "是") r.hasPartC = "是";
+        }
+        // 折扣：只有本次報名的精確備份（姓名＋登記時間）才沿用，徹底杜絕以往折扣被自動找回或套用到同名新報名。
+        if (o && (!r.discount || Number(r.discount) === 0) && o.discount) r.discount = Number(o.discount) || 0;
     });
 }
 
@@ -697,17 +714,21 @@ function submitRegistrationForm() {
 
     logDebug("正在上傳表單，安全同步寫入雲端試算表...", false);
 
+    // 🌟 本次報名的唯一登記時間：同時寫入雲端與本機備份鍵，確保每筆報名獨立可辨，回流時精確對齊。
+    const submitTimestamp = new Date().toLocaleString();
+
     let payload = {
         name: name, gender: gender, gradeText: grade, total: total,
         A堂數: targetCountA, B堂數: targetCountB, countA: targetCountA, countB: targetCountB, PartC: isC,
-        timestamp: new Date().toLocaleString(), 詳細日期A: arrA, 詳細日期B: arrB, detailsA: arrA, detailsB: arrB,
+        timestamp: submitTimestamp, 詳細日期A: arrA, 詳細日期B: arrB, detailsA: arrA, detailsB: arrB,
         specialDetails: specialJson, specialLessonsCount: specialNum, 特選: specialJson,
         備註: remark, remark: remark
     };
 
     // 🌟 本機備份報名核心（Part A／B 堂數與日期、特選課堂、備註）：即使雲端後端未保存這些欄位，
     //    後台同步後亦會自動補回，徹底杜絕「A/B 堂數顯示 0、月曆及點名看板無資料」的情況。
-    saveOverlayEntry(name, {
+    //    以「姓名＋登記時間」為鍵：同名學生每次報名各自獨立留底，不會覆蓋上一次，也不含任何折扣。
+    saveOverlayEntry(overlayKey(name, submitTimestamp), {
         countA: targetCountA, countB: targetCountB, detailsA: arrA, detailsB: arrB,
         special: special, remark: remark, hasPartC: isC
     });
@@ -885,10 +906,10 @@ function editDiscountRemark(index) {
     let rkInput = prompt(`為【${r.name}】填寫備註（可留空）：`, r.remark || "");
     if (rkInput === null) rkInput = r.remark || "";
     r.discount = discount; r.remark = String(rkInput).trim();
-    saveOverlayEntry(r.name, { discount: discount, remark: r.remark });
+    saveOverlayEntry(overlayKey(r.name, r.timestamp), { discount: discount, remark: r.remark });
     // 先本地即時更新畫面，確保即使雲端尚未同步亦可即時反映
     renderStats(cloudRecords); renderAdminTable(cloudRecords);
-    fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_record', name: r.name, 折扣: discount, 備註: r.remark, discount: discount, remark: r.remark }) })
+    fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_record', name: r.name, timestamp: r.timestamp, 折扣: discount, 備註: r.remark, discount: discount, remark: r.remark }) })
     .then(() => { logDebug(`已更新【${r.name}】折扣 $${discount}／備註。`, false); })
     .catch(err => logDebug("折扣/備註同步失敗：" + err.message, true));
 }
@@ -908,9 +929,9 @@ function editSpecialLessons(index) {
         newSpecial[key] = tm ? tm[0].replace(/\s/g, '') : "10:00-12:00";
     });
     r.special = newSpecial;
-    saveOverlayEntry(r.name, { special: newSpecial });
+    saveOverlayEntry(overlayKey(r.name, r.timestamp), { special: newSpecial });
     renderStats(cloudRecords); renderAdminTable(cloudRecords);
-    fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_record', name: r.name, specialDetails: JSON.stringify(newSpecial), specialLessonsCount: Object.keys(newSpecial).length, 特選: JSON.stringify(newSpecial) }) })
+    fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'update_record', name: r.name, timestamp: r.timestamp, specialDetails: JSON.stringify(newSpecial), specialLessonsCount: Object.keys(newSpecial).length, 特選: JSON.stringify(newSpecial) }) })
     .then(() => { logDebug("已更新【" + r.name + "】特選課堂 " + Object.keys(newSpecial).length + " 堂。", false); })
     .catch(err => logDebug("特選同步失敗：" + err.message, true));
 }
@@ -919,7 +940,9 @@ function deleteEntireRecord(index) {
     const r = cloudRecords[index]; if (!r) return;
     if (confirm(`⚠️ 確定要刪除學生【${r.name}】的紀錄嗎？`)) {
         const btn = document.getElementById("delBtn_" + index); if(btn) btn.innerText = "⏳...";
-        fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete_record', name: r.name }) })
+        // 一併清除這筆報名的本機備份（以姓名＋登記時間為鍵），避免刪除後又被本機備份補回。
+        removeOverlayEntry(overlayKey(r.name, r.timestamp));
+        fetch(scriptURL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete_record', name: r.name, timestamp: r.timestamp }) })
         .then(() => { alert("🎉 刪除成功。"); refreshFromSheets(); });
     }
 }
@@ -1074,45 +1097,53 @@ function generateDailyBoardHtml() {
     //    不屬於本 Part 的星期（連同整個月份）一律不顯示，列印時亦不會印出。
     let partDates = (currentDailyViewTab === 'AllA') ? PART_A_DATES : PART_B_DATES;
     let htmlContent = "";
+    // 🌟 1版1星期（跨月份合併）：把所有月份的上課日子串成一條連續時間軸，再每 5 個上課日（星期一至五）
+    //    切成一週。如此一來，橫跨月底月初的同一星期（例如 6/29、6/30 與 7/01、7/02、7/03）會合併在
+    //    同一版面、同一頁，不再因月份界線被拆成兩頁。週標題所屬月份以該週星期一的月份為準。
+    let allCells = [];
     Object.keys(FULL_CALENDAR_AXIS).forEach(m => {
-        let cells = FULL_CALENDAR_AXIS[m];
-        let monthHtml = "";
-        // 🌟 1版1星期：每 5 格（星期一至五）為一週，包成獨立區塊，列印時每週自成一頁
-        for (let w = 0; w < cells.length; w += 5) {
-            let weekCells = cells.slice(w, w + 5);
-            // 只保留含有本 Part 上課日子的星期，其餘星期（及空白週）完全略過
-            let belongs = weekCells.some(c => c.type === 'data' && partDates.has(cleanDateStr(c.d)));
-            if (!belongs) continue;
-            let label = weekCells.filter(c => c.type === 'data').map(c => c.d);
-            let weekTitle = label.length ? (label[0] + " ~ " + label[label.length - 1]) : "";
-            monthHtml += "<div class='cal-week-block'><div class='week-block-title'>📆 " + weekTitle + "（本週點名）</div><div class='calendar-grid'>";
-            weekCells.forEach(cell => {
-                if (cell.type === "empty") { monthHtml += "<div class='cal-box-day' style='opacity:0.2;'>-</div>"; return; }
-                let cl = cleanDateStr(cell.d); monthHtml += "<div class='cal-box-day'><b>" + cell.d + "</b>"; let count = 0; let tags = "";
-                cloudRecords.forEach(r => {
-                    let g = r.gradeText || ""; let grp = getScheduleGroup(g); let aligned = computeFullyAlignedSets(r.detailsA, r.detailsB, grp, Number(r.countA), Number(r.countB));
-                    let masterGroup = SCHEDULE_MASTER[grp] || SCHEDULE_MASTER.p1p3p6; let subA = masterGroup.A.find(x => cleanDateStr(x.d) === cl); let subB = masterGroup.B.find(x => cleanDateStr(x.d) === cl);
-                    let rk = (r.remark && String(r.remark).trim()) ? "<span class='cal-remark-tag'>📝 " + escapeHtml(r.remark) + "</span>" : "";
-                    if (currentDailyViewTab === 'AllA' && aligned.setA.has(cl)) { count++; let subName = subA ? subA.s : "常規"; tags += "<span class='cal-student-tag'>" + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(subName) + ")</span>" + rk + "</span>"; }
-                    else if (currentDailyViewTab === 'BAM' && aligned.setB.has(cl) && getPartBSession(g) === 'AM') { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#E0F7FA;color:#006064;border-left-color:#00ACC1;'> " + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(subName) + ")</span>" + rk + "</span>"; }
-                    else if (currentDailyViewTab === 'BPM' && aligned.setB.has(cl) && getPartBSession(g) === 'PM') { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#FFF3E0;color:#E65100;border-left-color:#FF9800;'> " + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(subName) + ")</span>" + rk + "</span>"; }
-                    // ⭐ 特選自選課堂：依學生所選日期融入所屬 Part 的點名看板。全 A 看板顯示該日全部特選；
-                    //    Part B 上午看板顯示 13:00 前、下午看板顯示 13:00 及之後的特選堂，讓導師一眼看清當場學生。
-                    if (r.special && r.special[cl]) {
-                        let startHour = parseInt(String(r.special[cl]).split(":")[0], 10) || 0;
-                        let showInThisView = (currentDailyViewTab === 'AllA') || (currentDailyViewTab === 'BAM' && startHour < 13) || (currentDailyViewTab === 'BPM' && startHour >= 13);
-                        if (showInThisView) { count++; tags += "<span class='cal-student-tag' style='background:#E8F5E9;color:#2e7d32;border-left-color:#2e7d32;'>⭐ [特選] " + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(r.special[cl]) + ")</span>" + rk + "</span>"; }
-                    }
-                });
-                let isH = (SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl) && SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl).h);
-                if (cl === "08/07") { monthHtml += "<span style='color:#E5989B;font-weight:bold;'>中心不開放</span>"; }
-                else if (isH) { monthHtml += "<span style='color:#E5989B;font-weight:bold;'>紅日假期</span>"; } else if(count > 0) { monthHtml += "<span style='color:#0288D1;font-weight:bold;font-size:11px;'>應到: " + count + " 人</span>" + tags; } else { monthHtml += "<span style='color:#ccc;'>無學生上課</span>"; }
-                monthHtml += "</div>";
-            });
-            monthHtml += "</div></div>";
-        }
-        if (monthHtml) { htmlContent += "<div class='month-section-title'>2026年 " + m + "月點名板</div>" + monthHtml; }
+        FULL_CALENDAR_AXIS[m].forEach(c => { if (c.type === 'data') allCells.push(c); });
     });
+    let lastMonthLabel = "";
+    for (let w = 0; w < allCells.length; w += 5) {
+        let weekCells = allCells.slice(w, w + 5);
+        // 只保留含有本 Part 上課日子的星期，其餘星期完全略過
+        let belongs = weekCells.some(c => partDates.has(cleanDateStr(c.d)));
+        if (!belongs) continue;
+        // 以該週星期一所屬月份歸入月份標題；跨月份的星期一律跟隨星期一的月份，確保整週同頁不被拆開
+        let monthLabel = cleanDateStr(weekCells[0].d).split("/")[0].replace(/^0/, "");
+        if (monthLabel && monthLabel !== lastMonthLabel) {
+            htmlContent += "<div class='month-section-title'>2026年 " + monthLabel + "月點名板</div>";
+            lastMonthLabel = monthLabel;
+        }
+        let label = weekCells.map(c => c.d);
+        let weekTitle = label.length ? (label[0] + " ~ " + label[label.length - 1]) : "";
+        let monthHtml = "<div class='cal-week-block'><div class='week-block-title'>📆 " + weekTitle + "（本週點名）</div><div class='calendar-grid'>";
+        weekCells.forEach(cell => {
+            let cl = cleanDateStr(cell.d); monthHtml += "<div class='cal-box-day'><b>" + cell.d + "</b>"; let count = 0; let tags = "";
+            cloudRecords.forEach(r => {
+                let g = r.gradeText || ""; let grp = getScheduleGroup(g); let aligned = computeFullyAlignedSets(r.detailsA, r.detailsB, grp, Number(r.countA), Number(r.countB));
+                let masterGroup = SCHEDULE_MASTER[grp] || SCHEDULE_MASTER.p1p3p6; let subA = masterGroup.A.find(x => cleanDateStr(x.d) === cl); let subB = masterGroup.B.find(x => cleanDateStr(x.d) === cl);
+                let rk = (r.remark && String(r.remark).trim()) ? "<span class='cal-remark-tag'>📝 " + escapeHtml(r.remark) + "</span>" : "";
+                if (currentDailyViewTab === 'AllA' && aligned.setA.has(cl)) { count++; let subName = subA ? subA.s : "常規"; tags += "<span class='cal-student-tag'>" + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(subName) + ")</span>" + rk + "</span>"; }
+                else if (currentDailyViewTab === 'BAM' && aligned.setB.has(cl) && getPartBSession(g) === 'AM') { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#E0F7FA;color:#006064;border-left-color:#00ACC1;'> " + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(subName) + ")</span>" + rk + "</span>"; }
+                else if (currentDailyViewTab === 'BPM' && aligned.setB.has(cl) && getPartBSession(g) === 'PM') { count++; let subName = subB ? subB.s : "特訓"; tags += "<span class='cal-student-tag' style='background:#FFF3E0;color:#E65100;border-left-color:#FF9800;'> " + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(subName) + ")</span>" + rk + "</span>"; }
+                // ⭐ 特選自選課堂：依學生所選日期融入所屬 Part 的點名看板。全 A 看板顯示該日全部特選；
+                //    Part B 上午看板顯示 13:00 前、下午看板顯示 13:00 及之後的特選堂，讓導師一眼看清當場學生。
+                if (r.special && r.special[cl]) {
+                    let startHour = parseInt(String(r.special[cl]).split(":")[0], 10) || 0;
+                    let showInThisView = (currentDailyViewTab === 'AllA') || (currentDailyViewTab === 'BAM' && startHour < 13) || (currentDailyViewTab === 'BPM' && startHour >= 13);
+                    if (showInThisView) { count++; tags += "<span class='cal-student-tag' style='background:#E8F5E9;color:#2e7d32;border-left-color:#2e7d32;'>⭐ [特選] " + escapeHtml(r.name) + " <span>(" + escapeHtml(g.replace('升','')) + " / " + escapeHtml(r.special[cl]) + ")</span>" + rk + "</span>"; }
+                }
+            });
+            let isH = (SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl) && SCHEDULE_MASTER.p1p3p6.A.find(x=>cleanDateStr(x.d)===cl).h);
+            if (cl === "08/07") { monthHtml += "<span style='color:#E5989B;font-weight:bold;'>中心不開放</span>"; }
+            else if (isH) { monthHtml += "<span style='color:#E5989B;font-weight:bold;'>紅日假期</span>"; } else if(count > 0) { monthHtml += "<span style='color:#0288D1;font-weight:bold;font-size:11px;'>應到: " + count + " 人</span>" + tags; } else { monthHtml += "<span style='color:#ccc;'>無學生上課</span>"; }
+            monthHtml += "</div>";
+        });
+        monthHtml += "</div></div>";
+        htmlContent += monthHtml;
+    }
     container.innerHTML = htmlContent || "<p style='padding:15px;color:#999;'>本看板暫無對應的上課日子。</p>";
 }
 
