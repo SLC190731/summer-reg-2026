@@ -54,7 +54,7 @@
         .time-col { display: none !important; }
         .clickable-name { color: #0288D1; font-weight: bold; cursor: pointer; text-decoration: underline; }
         
-        #dailyListModal, #parentNoticeModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; }
+        #dailyListModal, #parentNoticeModal, #importModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 9999; }
         .modal-content { background: #fff; width: 95%; max-width: 1100px; margin: 1% auto; padding: 30px; height: 95vh; overflow-y: auto; border-radius: 15px; color: var(--soft-brown); }
         
         .month-section-title { font-size: 1.3em; font-weight: bold; color: #01579B; border-left: 6px solid #0288D1; padding-left: 10px; margin-top: 20px; margin-bottom: 5px; text-align: left; }
@@ -254,6 +254,7 @@
             <button class="btn" style="background: #e67e22; width: auto; margin-top:0;" onclick="showDailyModal()">📅 每日上課名單看板</button>
             <button class="btn" style="background: #2e7d32; width: auto; margin-top:0;" onclick="refreshFromSheets()">🔄 手動同步雲端數據</button>
             <button class="btn" style="background: #1a7f5a; width: auto; margin-top:0;" onclick="backupToGoogleSheet(this)">⬆️ 立即備份至 Google 試算表</button>
+            <button class="btn" style="background: #6a1b9a; width: auto; margin-top:0;" onclick="openImportModal()">📥 匯入舊試算表資料</button>
             <button class="btn" style="background: #0288D1; width: auto; margin-top:0;" onclick="printAdminReport(false)">🖨 列印整個報表</button>
             <button class="btn" style="background: #455a64; width: auto; margin-top:0;" onclick="printAdminReport(true)">🖨 列印整個報表（不含實收學費總額）</button>
             <button class="btn" style="background: #795548; width: auto; margin-top:0;" onclick="exitAdminPanel()">🚪 退出後台回報名頁</button>
@@ -272,6 +273,28 @@
 
 <div id="parentNoticeModal"><div class="modal-content"><div style="text-align:center; border-bottom:3px solid #4A6D8C; padding-bottom:10px; margin-bottom:15px;"><h2 style="color:#4A6D8C; margin:0;" id="noticeStuName">學生上課月曆通知書</h2></div><div id="rescheduleNoticeBar" class="no-print" style="background:#FFF3CD; padding:12px; border-radius:8px; font-size:14px; border-left:5px solid #e67e22; color:#d35400; margin-bottom:15px; font-weight:bold;">💡 <b>直覺調堂：</b>點擊格子右下角 <b>🔄調堂</b>，點擊黃格子完成調堂。</div><div id="noticeCalendarContainer" onclick="handleCalendarContainerClick(event)"></div><div class="result-box"><p style="font-size:1.25em; font-weight:bold; color:#d35400; margin:0 0 6px 0;">費用總計：$<span id="noticeTotalSum">0</span></p><p id="noticeInstLine">學費分期：每期 $<span id="noticeInst">0</span> / 6期</p><p id="noticeExtraInfo" style="color:#d35400; font-weight:bold; margin:8px 0 0 0;"></p></div><div class="no-print" style="display:flex; gap:10px; margin-top:20px;"><button class="btn" style="background:#0288D1;" onclick="window.print()">🖨 列印通知書</button><button class="btn" style="background:#795548;" onclick="cancelRescheduleMode(); document.getElementById('parentNoticeModal').style.display='none';">關閉</button></div></div></div>
 <div id="dailyListModal"><div class="modal-content"><div style="display:flex; justify-content: space-between; align-items:center; border-bottom:2px solid #333; padding-bottom:10px;"><h3 style="margin:0;">📅 導師專用：暑期每日上課名單看板</h3><div class="no-print" style="display:flex; gap:8px;"><button class="btn" style="background:#0288D1; width:auto; margin:0;" onclick="printDailyBoard()">🖨 列印此名單</button><button class="btn" style="background:#795548; width:auto; margin:0;" onclick="document.getElementById('dailyListModal').style.display='none';">關閉</button></div></div><div class="view-tab-container no-print" style="margin-top:15px;"><button id="tabAllA" class="tab-btn active" onclick="switchDailyView('AllA')">☀️ 全體 Part A 名單</button><button id="tabBAM" class="tab-btn" onclick="switchDailyView('BAM')">☀️ Part B 上午班 (P2, P5, P6)</button><button id="tabBPM" class="tab-btn" onclick="switchDailyView('BPM')">🌙 Part B 下午班 (P1, P3, P4, 中學)</button><button id="tabPartC" class="tab-btn" onclick="switchDailyView('PartC')">🔮 Part C 成長之旅點名表</button></div><div id="dailyMonthContainer"></div></div></div>
+
+<div id="importModal"><div class="modal-content">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #6a1b9a; padding-bottom:10px;">
+        <h3 style="margin:0; color:#6a1b9a;">📥 一次性匯入舊試算表報名資料</h3>
+        <button class="btn" style="background:#795548; width:auto; margin:0;" onclick="document.getElementById('importModal').style.display='none';">關閉</button>
+    </div>
+    <div style="background:#F3E5F5; border-left:5px solid #6a1b9a; padding:14px; border-radius:8px; margin-top:15px; font-size:14px; color:#4a148c; line-height:1.7;">
+        <b>用法：</b><br>
+        1. 開啟舊試算表 <b>「2026暑期報名數據庫」</b>，<b>連同標題列</b>一併選取全部資料，按 <b>Ctrl/⌘ + C</b> 複製。<br>
+        2. 在下方大格子內 <b>Ctrl/⌘ + V</b> 貼上（由試算表複製的資料會自動以 Tab 分欄）。<br>
+        3. 按 <b>「🔍 解析預覽」</b>，核對下方表格中每名學生的欄位是否正確，<b>尤其是「Part A 日期 / Part B 日期 / 特選日期」是否與舊表逐日一致</b>。<br>
+        4. 確認無誤後按 <b>「✅ 確認匯入」</b>。匯入會把舊報名逐筆寫入新系統資料庫，並自動備份至新試算表「2026 暑期報名」。<br>
+        <span style="color:#b55d00;">⚠️ 重複按匯入不會產生重複紀錄（完全相同的資料會自動略過），可安全重試。</span><br>
+        <span style="color:#1565c0;">💡 系統會直接讀取舊表「詳細日期A／詳細日期B」欄的逐堂日期原樣還原，不會自行改動或重排；預覽表中若某學生的日期數與堂數不符會標紅提示。</span>
+    </div>
+    <textarea id="importPasteArea" rows="8" style="width:100%; box-sizing:border-box; margin-top:15px; padding:12px; border:1px solid var(--border-color); border-radius:8px; font-size:13px; font-family:monospace;" placeholder="在此貼上由舊試算表複製的資料（包含標題列）..."></textarea>
+    <div style="display:flex; gap:10px; margin-top:12px;">
+        <button class="btn" style="background:#0288D1; width:auto; margin-top:0;" onclick="previewImport()">🔍 解析預覽</button>
+        <button class="btn" style="background:#6a1b9a; width:auto; margin-top:0;" onclick="confirmImport(this)" id="confirmImportBtn" disabled>✅ 確認匯入</button>
+    </div>
+    <div id="importPreview" style="margin-top:18px;"></div>
+</div></div>
 
 <script>
 // 🌟 報名資料庫端點：改用 Netlify Function + Netlify Blobs，每筆報名以伺服器產生的唯一 ID
@@ -722,10 +745,11 @@ function computeFullyAlignedSets(detailsValueA, detailsValueB, group, countA, co
     let strA = String(detailsValueA || "").trim();
     let strB = String(detailsValueB || "").trim();
 
-    // 抓取純淨的 MM/DD 核心格式，不再受括號、中文字、全半形逗號或空格干擾
-    let matchesA = strA.match(/\d{2}\/\d{2}/g);
+    // 抓取純淨的 MM/DD 核心格式，不再受括號、星期、中文字、全半形逗號或空格干擾；
+    // 容許 1～2 位數（如「7/3」），再由 cleanDateStr 統一補零成「07/03」，確保與舊表逐日對齊、不漏不錯。
+    let matchesA = strA.match(/\d{1,2}\/\d{1,2}/g);
     if (matchesA) { arrA = matchesA.map(cleanDateStr); }
-    let matchesB = strB.match(/\d{2}\/\d{2}/g);
+    let matchesB = strB.match(/\d{1,2}\/\d{1,2}/g);
     if (matchesB) { arrB = matchesB.map(cleanDateStr); }
     
     let setA = new Set(arrA); let setB = new Set(arrB);
@@ -1121,6 +1145,267 @@ function generateDailyBoardHtml() {
 }
 
 function logDebug(msg, isError) { const con = document.getElementById('debugConsole'); if(con) { con.innerHTML = (isError ? "❌ " : "🔔 ") + msg + "<br>" + con.innerHTML; } }
+// ─────────────────────────────────────────────────────────────────────────
+// 📥 一次性匯入舊試算表資料
+// 把舊 Google 試算表（2026暑期報名數據庫）複製出來的內容，解析、預覽、再逐筆匯入新系統資料庫，
+// 之後由系統自動備份至新試算表（2026 暑期報名）。資料只有一個流向：舊表 → 新系統資料庫 → 新試算表，
+// 不會、也不需要把新表的內容寫回舊表。
+// ─────────────────────────────────────────────────────────────────────────
+var importParsedRecords = [];
+
+// 欄目對照（鍵均為「正規化」後的小寫無空格字串）。順序＝比對優先序，較具體者在前。
+// 注意：鍵的比對分兩階段（先「完全相等」、再「包含」），故較具體、易混淆的鍵也能安全放在這裡。
+// 舊試算表實際欄名：詳細日期A／詳細日期B（即 Part A／B 的逐堂上課日期），務必精準對上，
+// 否則系統會誤以為「舊表沒有日期欄」而改用簡章自動排課，導致日期與舊表完全不符。
+var IMPORT_FIELD_SYNONYMS = [
+    { field: 'timestamp', keys: ['登記時間','報名時間','提交時間','登記日期','報名日期','時間戳記','時間','timestamp'] },
+    { field: 'name',      keys: ['學生姓名','姓名','學生名稱','名字','studentname','name'] },
+    { field: 'gender',    keys: ['性別','gender'] },
+    { field: 'gradeText', keys: ['年級','升讀年級','升讀班級','級別','班級','grade'] },
+    { field: 'detailsA',  keys: ['詳細日期a','詳細課堂a','parta日期','parta上課日期','parta詳細','a上課日期','a詳細日期','a日期','a詳細'] },
+    { field: 'detailsB',  keys: ['詳細日期b','詳細課堂b','partb日期','partb上課日期','partb詳細','b上課日期','b詳細日期','b日期','b詳細'] },
+    { field: 'countA',    keys: ['parta堂數','a堂數','parta'] },
+    { field: 'countB',    keys: ['partb堂數','b堂數','partb'] },
+    { field: 'special',   keys: ['特選課堂','特選暑期課程','特選自選課堂','特選自選','自選課堂','特選堂數','特選日期','特選'] },
+    { field: 'hasPartC',  keys: ['partc','成長之旅'] },
+    { field: 'discount',  keys: ['折扣金額','折扣','discount'] },
+    { field: 'total',     keys: ['費用總計','學費總額','總費用','總金額','總額','原價','total','費用'] },
+    { field: 'remark',    keys: ['備註','備注','remark','note'] },
+    { field: 'detailsCombined', keys: ['詳細課堂','上課日期','詳細日期','課堂日期','上課日子','詳細'] }
+];
+
+function normalizeHeaderCell(s) {
+    return String(s == null ? '' : s).toLowerCase().replace(/[\s　「」『』（）()]/g, '').trim();
+}
+
+// 把整段貼上的內容切成二維陣列。
+// 由試算表（Google Sheets／Excel）複製出來時，欄與欄之間以 Tab 分隔、列與列之間以換行分隔；
+// 但若某格內含換行、Tab 或引號（例如把多個日期分行寫在同一格），該格會被「"…"」包住、格內引號變成兩個。
+// 因此必須用「尊重引號」的解析器逐字掃描，否則格內的換行會把一筆報名硬生生拆成多列，令欄位錯位、日期亂掉。
+// 若整段文字沒有任何 Tab，則視為以逗號分隔的 CSV，同樣尊重引號。
+function parseImportTable(text) {
+    text = String(text || '').replace(/\r\n?/g, '\n').replace(/\n+$/, '');
+    if (!text.trim()) return [];
+    var delimiter = text.indexOf('\t') !== -1 ? '\t' : ',';
+    var rows = [], row = [], field = '', inQ = false;
+    for (var i = 0; i < text.length; i++) {
+        var ch = text[i];
+        if (inQ) {
+            if (ch === '"') {
+                if (text[i + 1] === '"') { field += '"'; i++; }   // 兩個引號 = 一個實際引號
+                else { inQ = false; }
+            } else { field += ch; }
+        } else {
+            if (ch === '"') { inQ = true; }
+            else if (ch === delimiter) { row.push(field.trim()); field = ''; }
+            else if (ch === '\n') {
+                row.push(field.trim());
+                if (row.some(function(c){ return c !== ''; })) rows.push(row);
+                row = []; field = '';
+            } else { field += ch; }
+        }
+    }
+    row.push(field.trim());
+    if (row.some(function(c){ return c !== ''; })) rows.push(row);
+    return rows;
+}
+
+// 依標題列建立「欄索引 → 欄位名」對照表。
+// 分兩階段比對，確保最精準的標題優先佔位，避免「詳細日期A／B」被較籠統的「詳細日期」搶去：
+//   第一階段：標題完全等於某個鍵（最高信心）。
+//   第二階段：仍未對上的欄，才用「包含」做寬鬆比對。
+// 同一個欄位（如 detailsA）只會綁定一欄，先到先得，杜絕兩欄互相覆蓋。
+function buildImportColumnMap(headerCells) {
+    var map = {};
+    var usedFields = {};
+    function tryAssign(idx, nc, exactOnly) {
+        for (var f = 0; f < IMPORT_FIELD_SYNONYMS.length; f++) {
+            var def = IMPORT_FIELD_SYNONYMS[f];
+            if (usedFields[def.field]) continue;
+            for (var k = 0; k < def.keys.length; k++) {
+                var key = def.keys[k];
+                var hit = exactOnly ? (nc === key) : (nc.indexOf(key) !== -1);
+                if (hit) { map[idx] = def.field; usedFields[def.field] = true; return; }
+            }
+        }
+    }
+    // 第一階段：完全相等
+    headerCells.forEach(function(cell, idx){
+        var nc = normalizeHeaderCell(cell);
+        if (nc) tryAssign(idx, nc, true);
+    });
+    // 第二階段：包含比對（只處理仍未對上的欄）
+    headerCells.forEach(function(cell, idx){
+        if (map[idx] !== undefined) return;
+        var nc = normalizeHeaderCell(cell);
+        if (nc) tryAssign(idx, nc, false);
+    });
+    return map;
+}
+
+function importNormalizePartC(v) {
+    var t = String(v == null ? '' : v).trim();
+    if (!t || t === '—' || t === '-') return '否';
+    if (/^(否|無|no|n|false|0|×|x)$/i.test(t)) return '否';
+    if (/^(是|有|yes|y|true|✓|✔)$/i.test(t)) return '是';
+    var n = Number(t.replace(/[^0-9.]/g, ''));
+    if (!isNaN(n) && n > 0) return '是';
+    if (t.indexOf('是') !== -1 || t.indexOf('有') !== -1) return '是';
+    return '否';
+}
+
+// 把特選欄字串還原成 {MM/DD: 時間} 物件。容許多種分隔（逗號、頓號、分號、換行）與多種寫法：
+//   「06/22(10:00-12:00), 07/15 14:00-16:00」「07/03(五), 07/10(四)」「7/3 10:00-12:00」等。
+// 逐段抽出第一個 MM/DD 日期作為鍵，括號內的星期（如「(五)」）會被忽略；若該段另有時間段則照搬，
+// 沒有時間則沿用預設 10:00-12:00。確保特選日子與舊表逐一對應，不增不減。
+function importParseSpecial(strVal) {
+    var obj = {};
+    String(strVal == null ? '' : strVal).split(/[,，;；、\n]+/).forEach(function(part){
+        var p = String(part).trim(); if (!p) return;
+        var dm = p.match(/(\d{1,2})\/(\d{1,2})/); if (!dm) return;
+        var key = cleanDateStr(dm[0]); if (!key) return;
+        var tm = p.match(/\d{1,2}:\d{2}\s*-\s*\d{1,2}:\d{2}/);
+        obj[key] = tm ? tm[0].replace(/\s/g, '') : '10:00-12:00';
+    });
+    return obj;
+}
+
+function importDigits(v) {
+    return String(v == null ? '' : v).replace(/[^0-9.]/g, '');
+}
+
+function openImportModal() {
+    importParsedRecords = [];
+    document.getElementById('importPasteArea').value = '';
+    document.getElementById('importPreview').innerHTML = '';
+    var btn = document.getElementById('confirmImportBtn'); if (btn) btn.disabled = true;
+    document.getElementById('importModal').style.display = 'block';
+}
+
+function previewImport() {
+    importParsedRecords = [];
+    var preview = document.getElementById('importPreview');
+    var confirmBtn = document.getElementById('confirmImportBtn');
+    if (confirmBtn) confirmBtn.disabled = true;
+    var raw = document.getElementById('importPasteArea').value;
+    var table = parseImportTable(raw);
+    if (table.length < 2) {
+        preview.innerHTML = "<div style='color:#d9534f; font-weight:bold;'>⚠️ 未偵測到有效資料。請連同標題列一併貼上，且最少要有一筆學生資料。</div>";
+        return;
+    }
+    var colMap = buildImportColumnMap(table[0]);
+    var hasName = Object.keys(colMap).some(function(k){ return colMap[k] === 'name'; });
+    if (!hasName) {
+        preview.innerHTML = "<div style='color:#d9534f; font-weight:bold;'>⚠️ 找不到「姓名」欄。請確認貼上的第一列是標題列（包含「姓名」「年級」「性別」等欄名）。</div>";
+        return;
+    }
+
+    var recognized = {};
+    Object.keys(colMap).forEach(function(k){ recognized[colMap[k]] = true; });
+
+    var records = [];
+    var skippedNoName = 0;
+    for (var r = 1; r < table.length; r++) {
+        var cells = table[r];
+        var rec = { name:'', gender:'', gradeText:'', total:'0', countA:'0', countB:'0',
+                    detailsA:'', detailsB:'', special:{}, hasPartC:'否', discount:0, remark:'', timestamp:'' };
+        var combined = '';
+        Object.keys(colMap).forEach(function(idxStr){
+            var idx = Number(idxStr);
+            var field = colMap[idx];
+            var val = cells[idx] != null ? String(cells[idx]).trim() : '';
+            if (field === 'name') rec.name = val;
+            else if (field === 'gender') rec.gender = val;
+            else if (field === 'gradeText') rec.gradeText = val;
+            else if (field === 'total') rec.total = importDigits(val) || '0';
+            else if (field === 'discount') rec.discount = Number(importDigits(val)) || 0;
+            else if (field === 'countA') rec.countA = String(parseInt(importDigits(val), 10) || 0);
+            else if (field === 'countB') rec.countB = String(parseInt(importDigits(val), 10) || 0);
+            else if (field === 'detailsA') rec.detailsA = val;
+            else if (field === 'detailsB') rec.detailsB = val;
+            else if (field === 'special') rec.special = importParseSpecial(val);
+            else if (field === 'hasPartC') rec.hasPartC = importNormalizePartC(val);
+            else if (field === 'remark') rec.remark = val;
+            else if (field === 'timestamp') rec.timestamp = val;
+            else if (field === 'detailsCombined') combined = val;
+        });
+        // 若舊表只有一個合併的「詳細課堂」欄，沒有獨立的 A／B 日期欄，則把日期放進 detailsA，
+        // 由 computeFullyAlignedSets 依堂數對齊；不足之數會自動按簡章補回。
+        if (combined && !recognized.detailsA && !recognized.detailsB) rec.detailsA = combined;
+        if (!rec.name) { skippedNoName++; continue; }
+        records.push(rec);
+    }
+
+    importParsedRecords = records;
+    if (!records.length) {
+        preview.innerHTML = "<div style='color:#d9534f; font-weight:bold;'>⚠️ 沒有解析到任何有姓名的學生資料。</div>";
+        return;
+    }
+
+    var fieldLabels = { name:'姓名', gender:'性別', gradeText:'年級', total:'總額', discount:'折扣',
+                        countA:'A堂數', countB:'B堂數', hasPartC:'Part C', special:'特選', detailsA:'A日期',
+                        detailsB:'B日期', detailsCombined:'課堂日期', remark:'備註', timestamp:'登記時間' };
+    var recognizedNames = Object.keys(recognized).map(function(f){ return fieldLabels[f] || f; }).join('、');
+
+    var html = "<div style='background:#E8F5E9; border-left:5px solid #2e7d32; padding:10px 14px; border-radius:8px; font-size:14px; color:#1b5e20; margin-bottom:12px;'>" +
+        "✅ 成功解析 <b>" + records.length + "</b> 筆學生資料。已辨識欄位：<b>" + recognizedNames + "</b>。" +
+        (skippedNoName > 0 ? "<br><span style='color:#b55d00;'>（略過 " + skippedNoName + " 列沒有姓名的資料）</span>" : "") +
+        "<br>請核對下表後再按「確認匯入」。</div>";
+    html += "<div style='max-height:42vh; overflow:auto; border:1px solid var(--border-color); border-radius:8px;'><table class='admin-table' style='margin:0;'><thead><tr>" +
+        "<th>#</th><th>姓名</th><th>年級</th><th>性別</th><th>總額</th><th>折扣</th><th>A堂數</th><th>Part A 日期</th><th>B堂數</th><th>Part B 日期</th><th>Part C</th><th>特選日期</th><th>備註</th><th>登記時間</th></tr></thead><tbody>";
+    records.forEach(function(rec, i){
+        var aDates = (String(rec.detailsA).match(/\d{1,2}\/\d{1,2}/g) || []).map(cleanDateStr).join(", ");
+        var bDates = (String(rec.detailsB).match(/\d{1,2}\/\d{1,2}/g) || []).map(cleanDateStr).join(", ");
+        var spDates = Object.keys(rec.special || {}).map(function(d){
+            var t = rec.special[d];
+            return (t && t !== "10:00-12:00") ? d + " " + t : d;
+        }).join(", ");
+        // 解析出的日期數與堂數不符時標紅，方便老師即時察覺舊表資料有缺漏。
+        var aCount = aDates ? aDates.split(",").length : 0;
+        var bCount = bDates ? bDates.split(",").length : 0;
+        var aWarn = (Number(rec.countA) > 0 && aCount !== Number(rec.countA)) ? " style='color:#d9534f;font-weight:bold;'" : "";
+        var bWarn = (Number(rec.countB) > 0 && bCount !== Number(rec.countB)) ? " style='color:#d9534f;font-weight:bold;'" : "";
+        html += "<tr><td>" + (i+1) + "</td><td>" + escapeHtml(rec.name) + "</td><td>" + escapeHtml(rec.gradeText) + "</td>" +
+            "<td>" + escapeHtml(rec.gender) + "</td><td>$" + (Number(importDigits(rec.total)) || 0) + "</td>" +
+            "<td>" + (rec.discount > 0 ? "-$" + rec.discount : "—") + "</td>" +
+            "<td" + aWarn + ">" + rec.countA + "</td>" +
+            "<td style='max-width:240px; font-size:11px; color:#2e7d32;'>" + (escapeHtml(aDates) || "—") + "</td>" +
+            "<td" + bWarn + ">" + rec.countB + "</td>" +
+            "<td style='max-width:240px; font-size:11px; color:#00695c;'>" + (escapeHtml(bDates) || "—") + "</td>" +
+            "<td>" + escapeHtml(rec.hasPartC) + "</td>" +
+            "<td style='max-width:200px; font-size:11px; color:#388e3c;'>" + (specialCount(rec.special) > 0 ? "⭐ " + escapeHtml(spDates) : "—") + "</td>" +
+            "<td style='max-width:140px; font-size:12px;'>" + escapeHtml(rec.remark) + "</td>" +
+            "<td style='font-size:12px;'>" + escapeHtml(rec.timestamp) + "</td></tr>";
+    });
+    html += "</tbody></table></div>";
+    preview.innerHTML = html;
+    if (confirmBtn) confirmBtn.disabled = false;
+}
+
+function confirmImport(btn) {
+    if (!importParsedRecords.length) { alert("請先按「解析預覽」並確認資料。"); return; }
+    if (!confirm("確定要把這 " + importParsedRecords.length + " 筆舊報名匯入新系統資料庫嗎？\n（完全相同的資料會自動略過，可安全重試）")) return;
+    var original = btn ? btn.innerHTML : '';
+    if (btn) { btn.disabled = true; btn.innerHTML = "⏳ 匯入中..."; }
+    logDebug("正在把 " + importParsedRecords.length + " 筆舊報名匯入伺服器資料庫...", false);
+    fetch(apiURL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'import', records: importParsedRecords }) })
+    .then(function(res){ if (!res.ok) throw new Error('伺服器回應 ' + res.status); return res.json(); })
+    .then(function(data){
+        var msg = "✅ 匯入完成：新增 " + (data.imported != null ? data.imported : '?') + " 筆";
+        if (data.skipped) msg += "，略過重複 " + data.skipped + " 筆";
+        msg += "。\n";
+        if (data.syncConfigured === false) msg += "⚠️ 尚未設定 Google 試算表同步網址，資料已存入後台，但未自動寫入新試算表。";
+        else if (data.synced) msg += "已自動備份至新試算表「2026 暑期報名」。";
+        else msg += "⚠️ 已存入後台，但備份至新試算表時出錯，請稍後在後台按「⬆️ 立即備份至 Google 試算表」重試。";
+        alert(msg);
+        logDebug("匯入完成：新增 " + data.imported + " 筆，略過 " + data.skipped + " 筆。", false);
+        document.getElementById('importModal').style.display = 'none';
+        refreshFromSheets();
+    })
+    .catch(function(err){ alert("❌ 匯入失敗：" + err.message); logDebug("匯入失敗：" + err.message, true); })
+    .finally(function(){ if (btn) { btn.disabled = false; btn.innerHTML = original; } });
+}
+
 window.onload = function() { calculateLiveRegistrationPrice(); };
 </script>
 </body></html>

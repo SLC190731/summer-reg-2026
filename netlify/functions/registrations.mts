@@ -206,6 +206,100 @@ export default async (req: Request, context: Context) => {
       return Response.json({ ok: true, id })
     }
 
+    // 一次性匯入舊資料：把舊 Google 試算表（或任何來源）整理好的多筆報名，逐筆寫入伺服器資料庫。
+    // 每筆都配發全新唯一 ID 獨立存放，與現有紀錄並存、永不互相覆蓋；再以同一簽名做去重，
+    // 令同一份資料重複按「匯入」也不會產生重複紀錄（可安全重試）。匯入完成後即時把完整名冊
+    // 推送至新的 Google 試算表，令舊資料一拼出現在後台名冊及新試算表。
+    if (action === 'import') {
+      const incoming = Array.isArray(body.records) ? (body.records as Record<string, unknown>[]) : []
+      if (!incoming.length) {
+        return Response.json({ ok: false, error: '沒有可匯入的資料' }, { status: 400 })
+      }
+
+      // 規範化單筆：把外部欄位整理成資料庫的標準結構，缺漏一律給安全預設值。
+      const normalize = (raw: Record<string, unknown>) => {
+        const str = (v: unknown) => (v == null ? '' : String(v).trim())
+        let special: Record<string, string> = {}
+        if (raw.special && typeof raw.special === 'object' && !Array.isArray(raw.special)) {
+          for (const [k, v] of Object.entries(raw.special as Record<string, unknown>)) {
+            const key = str(k)
+            if (key) special[key] = str(v) || '10:00-12:00'
+          }
+        }
+        return {
+          name: str(raw.name),
+          gender: str(raw.gender),
+          gradeText: str(raw.gradeText),
+          total: str(raw.total) || '0',
+          countA: str(raw.countA) || '0',
+          countB: str(raw.countB) || '0',
+          detailsA: str(raw.detailsA),
+          detailsB: str(raw.detailsB),
+          special,
+          hasPartC: str(raw.hasPartC) || '否',
+          discount: Number(str(raw.discount).replace(/[^0-9.]/g, '')) || 0,
+          remark: str(raw.remark),
+          timestamp: str(raw.timestamp),
+        }
+      }
+
+      // 去重簽名：涵蓋所有實質欄位，只有完全相同的紀錄才會被視為重複而略過。
+      const sig = (r: ReturnType<typeof normalize>) =>
+        [
+          r.name,
+          r.gender,
+          r.gradeText,
+          r.total,
+          r.discount,
+          r.countA,
+          r.countB,
+          r.detailsA,
+          r.detailsB,
+          Object.keys(r.special).sort().map((k) => `${k}=${r.special[k]}`).join('+'),
+          r.hasPartC,
+          r.remark,
+          r.timestamp,
+        ].join('|')
+
+      const existing = await loadAllRecords(store)
+      const seen = new Set(existing.map((e) => sig(normalize(e))))
+
+      let imported = 0
+      let skipped = 0
+      const now = Date.now()
+      let i = 0
+      for (const raw of incoming) {
+        const rec = normalize(raw)
+        if (!rec.name) {
+          skipped++
+          i++
+          continue
+        }
+        const s = sig(rec)
+        if (seen.has(s)) {
+          skipped++
+          i++
+          continue
+        }
+        seen.add(s)
+        const id = newId()
+        // imported 標記方便日後辨識來源；createdAt 以匯入次序遞增，令舊資料在試算表中保持貼上的順序。
+        await store.setJSON(id, { ...rec, id, imported: true, createdAt: new Date(now + i).toISOString() })
+        imported++
+        i++
+      }
+
+      const result = await syncToGoogleSheets(await loadAllRecords(store))
+      return Response.json({
+        ok: true,
+        imported,
+        skipped,
+        received: incoming.length,
+        synced: result.ok,
+        syncConfigured: result.configured,
+      })
+    }
+
     // 手動全量同步：把現有完整名冊立即推送到 Google 試算表（亦用於首次把舊資料補入試算表）。
     if (action === 'sync') {
       const records = await loadAllRecords(store)
